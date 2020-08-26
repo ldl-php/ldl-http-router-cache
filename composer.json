@@ -1,0 +1,26 @@
+{
+    "name": "ldl-framework/http-router-cache",
+    "description": "LDL HTTP Router Cache",
+    "type": "library",
+    "require": {
+        "symfony/cache": "^5.1",
+        "ldl-framework/http-core": "dev-master",
+        "ldl-framework/http-router": "dev-master"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Federico Stange",
+            "email": "jpfstange@gmail.com"
+        },
+        {
+            "name": "Gonzalo Coda",
+            "email": "gonzalocoda@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "LDL\\": "src/"
+        }
+    }
+}
