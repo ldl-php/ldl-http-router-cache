@@ -1,11 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace LDL\Http\Router\Dispatcher;
+namespace LDL\Http\Router\Plugin\LDL\Cache\Dispatcher;
 
 use LDL\Http\Core\Request\RequestInterface;
 use LDL\Http\Core\Response\ResponseInterface;
-use LDL\Http\Router\Plugin\LDL\Cache\Cache\CacheableInterface;
-use LDL\Http\Router\Plugin\LDL\Cache\Cache\Config\RouteCacheConfig;
+use LDL\Http\Router\Plugin\LDL\Cache\Config\RouteCacheConfig;
 use LDL\Http\Router\Route\Middleware\MiddlewareInterface;
 use LDL\Http\Router\Route\Route;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheAdapterInterface;
@@ -57,7 +56,7 @@ class PostDispatch implements MiddlewareInterface
 
     public function dispatch(Route $route, RequestInterface $request, ResponseInterface $response): void
     {
-        var_dump("DISPATCH DEL POSTDISPATCH");
+        var_dump('POST DISPATCH');
 
         /**
          * @var CacheableInterface $dispatcher

@@ -6,7 +6,6 @@ use LDL\Http\Core\Request\Request;
 use LDL\Http\Core\Request\RequestInterface;
 use LDL\Http\Core\Response\Response;
 use LDL\Http\Core\Response\ResponseInterface;
-use LDL\Http\Router\Plugin\LDL\Cache\Cache\CacheableInterface;
 use LDL\Http\Router\Route\Config\Parser\RouteConfigParserCollection;
 use LDL\Http\Router\Route\Dispatcher\RouteDispatcherInterface;
 use LDL\Http\Router\Route\Factory\RouteFactory;
@@ -17,7 +16,9 @@ use LDL\Http\Router\Route\Parameter\ParameterInterface;
 use LDL\Http\Router\Route\RouteInterface;
 use LDL\Http\Router\Router;
 use LDL\Http\Router\Schema\SchemaRepository;
-use LDL\Http\Router\Config\ConfigParser;
+
+use LDL\Http\Router\Plugin\LDL\Cache\Dispatcher\CacheableInterface;
+use LDL\Http\Router\Plugin\LDL\Cache\Config\ConfigParser;
 
 class Dispatch implements RouteDispatcherInterface, CacheableInterface
 {
@@ -81,8 +82,8 @@ $group = new RouteGroup('student', 'student', $routes);
 $response = new Response();
 
 $router = new Router(
-Request::createFromGlobals(),
-$response
+    Request::createFromGlobals(),
+    $response
 );
 
 $router->addGroup($group);

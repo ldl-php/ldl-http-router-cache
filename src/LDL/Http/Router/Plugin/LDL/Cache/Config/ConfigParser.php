@@ -1,10 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace LDL\Http\Router\Config;
+namespace LDL\Http\Router\Plugin\LDL\Cache\Config;
 
-use LDL\Http\Router\Plugin\LDL\Cache\Cache\Config\RouteCacheConfig;
-use LDL\Http\Router\Dispatcher\PreDispatch;
-use LDL\Http\Router\Dispatcher\PostDispatch;
+use LDL\Http\Router\Plugin\LDL\Cache\Dispatcher\PreDispatch;
+use LDL\Http\Router\Plugin\LDL\Cache\Dispatcher\PostDispatch;
 use LDL\Http\Router\Route\Config\Parser\RouteConfigParserInterface;
 use LDL\Http\Router\Route\Route;
 use Psr\Container\ContainerInterface;

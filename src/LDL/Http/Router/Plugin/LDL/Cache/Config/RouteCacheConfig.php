@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace LDL\Http\Router\Plugin\LDL\Cache\Cache\Config;
+namespace LDL\Http\Router\Plugin\LDL\Cache\Config;
 
 class RouteCacheConfig
 {
