@@ -1,0 +1,49 @@
+{
+  "routes": [
+    {
+      "version": "1.0",
+      "url": {
+        "prefix": "list/{urlName}",
+        "parameters": {
+          "schema": {
+            "repository": "url-parameters.schema"
+          }
+        }
+      },
+      "name": "test",
+      "description": "A test route",
+      "dispatcher": {
+        "class": "Dispatch"
+      },
+      "request": {
+        "method": "get",
+        "headers": {
+          "schema": {
+            "repository": "header-parameters.schema"
+          }
+        },
+        "parameters": {
+          "schema": {
+            "repository": "request-parameters.schema"
+          }
+        }
+      },
+      "response": {
+        "contentType": "application/json"
+      },
+      "cache": {
+        "adapter": {
+          "class": "Symfony\\Component\\Cache\\Adapter\\FilesystemAdapter"
+        },
+        "active": true,
+        "priority": 1,
+        "config": {
+          "purgeable": false,
+          "enabled": true,
+          "expiresAt": "2020-09-01 18:00:00",
+          "secretKey": "test"
+        }
+      }
+    }
+  ]
+}

@@ -57,6 +57,8 @@ class PostDispatch implements MiddlewareInterface
 
     public function dispatch(Route $route, RequestInterface $request, ResponseInterface $response): void
     {
+        var_dump("DISPATCH DEL POSTDISPATCH");
+
         /**
          * @var CacheableInterface $dispatcher
          */
@@ -73,7 +75,7 @@ class PostDispatch implements MiddlewareInterface
             $response->setExpires($expires);
         }
 
-        $encode = ['expires' => $expires, 'data' => $response->getContent()];
+        $encode = ['expires' => $expires, 'data' => $response->getContent(), 'hit' => true];
 
         $item->set($encode);
         $this->cacheAdapter->save($item);

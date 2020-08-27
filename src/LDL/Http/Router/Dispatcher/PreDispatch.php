@@ -59,6 +59,7 @@ class PreDispatch implements MiddlewareInterface
 
     public function dispatch(Route $route, RequestInterface $request, ResponseInterface $response): void
     {
+        var_dump("DISPATCH DEL PREDISPATCH");
         /**
          * @var CacheableInterface $dispatcher
          */
