@@ -6,7 +6,7 @@ use LDL\Http\Core\Request\Request;
 use LDL\Http\Core\Request\RequestInterface;
 use LDL\Http\Core\Response\Response;
 use LDL\Http\Core\Response\ResponseInterface;
-use LDL\Http\Router\Cache\CacheableInterface;
+use LDL\Http\Router\Plugin\LDL\Cache\Cache\CacheableInterface;
 use LDL\Http\Router\Route\Config\Parser\RouteConfigParserCollection;
 use LDL\Http\Router\Route\Dispatcher\RouteDispatcherInterface;
 use LDL\Http\Router\Route\Factory\RouteFactory;

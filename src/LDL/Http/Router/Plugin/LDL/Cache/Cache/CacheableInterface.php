@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace LDL\Http\Router\Cache;
+namespace LDL\Http\Router\Plugin\LDL\Cache\Cache;
 
 use LDL\Http\Core\Request\RequestInterface;
 use LDL\Http\Core\Response\ResponseInterface;

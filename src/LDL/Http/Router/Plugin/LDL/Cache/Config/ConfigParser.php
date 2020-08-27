@@ -2,7 +2,7 @@
 
 namespace LDL\Http\Router\Config;
 
-use LDL\Http\Router\Cache\Config\RouteCacheConfig;
+use LDL\Http\Router\Plugin\LDL\Cache\Cache\Config\RouteCacheConfig;
 use LDL\Http\Router\Dispatcher\PreDispatch;
 use LDL\Http\Router\Dispatcher\PostDispatch;
 use LDL\Http\Router\Route\Config\Parser\RouteConfigParserInterface;
