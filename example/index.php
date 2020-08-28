@@ -32,7 +32,7 @@ class Dispatch implements RouteDispatcherInterface, CacheableInterface
         ResponseInterface $response
     ): string
     {
-        return 'test';
+        return 'test2';
     }
 
     public function dispatch(
@@ -42,7 +42,7 @@ class Dispatch implements RouteDispatcherInterface, CacheableInterface
         ParameterCollection $urlParameters = null
     ) : array
     {
-        echo "HOLA";
+
         return [
             'converted' => $parameters->get('name')->getConvertedValue()
         ];

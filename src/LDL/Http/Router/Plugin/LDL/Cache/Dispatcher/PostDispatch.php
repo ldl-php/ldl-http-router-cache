@@ -5,12 +5,15 @@ namespace LDL\Http\Router\Plugin\LDL\Cache\Dispatcher;
 use LDL\Http\Core\Request\RequestInterface;
 use LDL\Http\Core\Response\ResponseInterface;
 use LDL\Http\Router\Plugin\LDL\Cache\Config\RouteCacheConfig;
-use LDL\Http\Router\Route\Middleware\MiddlewareInterface;
+use LDL\Http\Router\Route\Middleware\PostDispatchMiddlewareInterface;
 use LDL\Http\Router\Route\Route;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheAdapterInterface;
 
-class PostDispatch implements MiddlewareInterface
+class PostDispatch implements PostDispatchMiddlewareInterface
 {
+    private const NAMESPACE = 'PostDispatchNamespace';
+    private const NAME = 'PostDispatchName';
+
     /**
      * @var bool
      */
@@ -44,6 +47,16 @@ class PostDispatch implements MiddlewareInterface
         $this->cacheConfig = $cacheConfig;
     }
 
+    public function getNamespace(): string
+    {
+        return self::NAMESPACE;
+    }
+
+    public function getName(): string
+    {
+        return self::NAME;
+    }
+
     public function isActive(): bool
     {
         return $this->isActive;
@@ -54,10 +67,13 @@ class PostDispatch implements MiddlewareInterface
         return $this->priority;
     }
 
-    public function dispatch(Route $route, RequestInterface $request, ResponseInterface $response): void
+    public function dispatch(
+        Route $route,
+        RequestInterface $request,
+        ResponseInterface $response,
+        array $prevResults = []
+    ): void
     {
-        var_dump('POST DISPATCH');
-
         /**
          * @var CacheableInterface $dispatcher
          */
@@ -74,7 +90,7 @@ class PostDispatch implements MiddlewareInterface
             $response->setExpires($expires);
         }
 
-        $encode = ['expires' => $expires, 'data' => $response->getContent(), 'hit' => true];
+        $encode = ['expires' => $expires, 'data' => $prevResults];
 
         $item->set($encode);
         $this->cacheAdapter->save($item);

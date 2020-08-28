@@ -5,6 +5,7 @@ namespace LDL\Http\Router\Plugin\LDL\Cache\Dispatcher;
 use LDL\Http\Core\Request\RequestInterface;
 use LDL\Http\Core\Response\ResponseInterface;
 use LDL\Http\Router\Plugin\LDL\Cache\Config\RouteCacheConfig;
+use LDL\Http\Router\Response\Parser\JsonResponseParser;
 use LDL\Http\Router\Route\Middleware\MiddlewareInterface;
 use LDL\Http\Router\Route\Route;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheAdapterInterface;
@@ -12,6 +13,8 @@ use Symfony\Component\Cache\Adapter\AdapterInterface as CacheAdapterInterface;
 class PreDispatch implements MiddlewareInterface
 {
     private const PURGE_SECRET_HEADER = 'X-HTTP-CACHE-SECRET';
+    private const NAMESPACE = 'PreDispatchNamespace';
+    private const NAME = 'PreDispatchName';
 
     /**
      * @var bool
@@ -46,6 +49,16 @@ class PreDispatch implements MiddlewareInterface
         $this->cacheConfig = $cacheConfig;
     }
 
+    public function getNamespace(): string
+    {
+        return self::NAMESPACE;
+    }
+
+    public function getName(): string
+    {
+        return self::NAME;
+    }
+
     public function isActive(): bool
     {
         return $this->isActive;
@@ -58,7 +71,6 @@ class PreDispatch implements MiddlewareInterface
 
     public function dispatch(Route $route, RequestInterface $request, ResponseInterface $response): void
     {
-        var_dump('PRE DISPATCH');
         /**
          * @var CacheableInterface $dispatcher
          */
@@ -97,7 +109,9 @@ class PreDispatch implements MiddlewareInterface
             return;
         }
 
+        $jsonParser = new JsonResponseParser();
+
         $response->setExpires($value['expires']);
-        $response->setContent($value['data']);
+        $response->setContent($jsonParser->parse($value['data']));
     }
 }

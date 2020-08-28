@@ -22,7 +22,7 @@ class RouteCacheConfig
     /**
      * @var bool
      */
-    private $enabled=true;
+    private $enabled = true;
 
     public static function fromArray(array $data) : self
     {
@@ -38,7 +38,7 @@ class RouteCacheConfig
 
     public function __construct(
         bool $purgeable,
-        bool $enabled=true,
+        bool $enabled = true,
         ?string $expiresAt=null,
         ?string $secretKey=null
     )
