@@ -3,33 +3,18 @@
     {
       "version": "1.0",
       "url": {
-        "prefix": "list/{urlName}",
-        "parameters": {
-          "schema": {
-            "repository": "url-parameters.schema"
-          }
-        }
+        "prefix": "list/{urlName}"
+      },
+      "request": {
+        "method": "get"
       },
       "name": "test",
       "description": "A test route",
       "dispatcher": {
         "class": "Dispatch"
       },
-      "request": {
-        "method": "get",
-        "headers": {
-          "schema": {
-            "repository": "header-parameters.schema"
-          }
-        },
-        "parameters": {
-          "schema": {
-            "repository": "request-parameters.schema"
-          }
-        }
-      },
-      "response": {
-        "contentType": "application/json"
+      "customConfig": {
+        "test": "1"
       },
       "cache": {
         "adapter": {

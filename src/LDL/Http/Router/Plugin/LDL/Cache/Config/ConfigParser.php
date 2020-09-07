@@ -14,7 +14,7 @@ class ConfigParser implements RouteConfigParserInterface
     private const DEFAULT_IS_ACTIVE = true;
     private const DEFAULT_PRIORITY = 1;
 
-    public function parse(array $data, Route $route, ContainerInterface $container = null): void
+    public function parse(array $data, Route $route, ContainerInterface $container = null, string $file = null): void
     {
         if(!array_key_exists('cache', $data)){
             return;

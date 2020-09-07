@@ -69,7 +69,12 @@ class PreDispatch implements MiddlewareInterface
         return $this->priority;
     }
 
-    public function dispatch(Route $route, RequestInterface $request, ResponseInterface $response): void
+    public function dispatch(
+        Route $route,
+        RequestInterface $request,
+        ResponseInterface $response,
+        array $urlArguments
+    ): void
     {
         /**
          * @var CacheableInterface $dispatcher

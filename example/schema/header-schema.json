@@ -1,9 +1,0 @@
-{
-  "type": "object",
-  "properties": {
-    "content-type": {
-      "type": "string",
-      "pattern": "^application/json$"
-    }
-  }
-}

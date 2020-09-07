@@ -10,13 +10,8 @@ use LDL\Http\Router\Route\Config\Parser\RouteConfigParserCollection;
 use LDL\Http\Router\Route\Dispatcher\RouteDispatcherInterface;
 use LDL\Http\Router\Route\Factory\RouteFactory;
 use LDL\Http\Router\Route\Group\RouteGroup;
-use LDL\Http\Router\Route\Parameter\ParameterCollection;
-use LDL\Http\Router\Route\Parameter\ParameterConverterInterface;
-use LDL\Http\Router\Route\Parameter\ParameterInterface;
 use LDL\Http\Router\Route\RouteInterface;
 use LDL\Http\Router\Router;
-use LDL\Http\Router\Schema\SchemaRepository;
-
 use LDL\Http\Router\Plugin\LDL\Cache\Dispatcher\CacheableInterface;
 use LDL\Http\Router\Plugin\LDL\Cache\Config\ConfigParser;
 
@@ -37,39 +32,22 @@ class Dispatch implements RouteDispatcherInterface, CacheableInterface
 
     public function dispatch(
         RequestInterface $request,
-        ResponseInterface $response,
-        ParameterCollection $parameters = null,
-        ParameterCollection $urlParameters = null
+        ResponseInterface $response
     ) : array
     {
-
         return [
-            'converted' => $parameters->get('name')->getConvertedValue()
+            'name' => $request->get('name')
         ];
-    }
-}
-
-class NameTransformer implements ParameterConverterInterface{
-    public function convert(ParameterInterface $parameter)
-    {
-        return strtoupper($parameter->getValue());
     }
 }
 
 $parserCollection = new RouteConfigParserCollection();
 $parserCollection->append(new ConfigParser());
 
-$schemaRepo = new SchemaRepository();
-
-$schemaRepo->append(__DIR__.'/schema/header-schema.json', 'header-parameters.schema');
-$schemaRepo->append(__DIR__.'/schema/parameter-schema.json', 'request-parameters.schema');
-$schemaRepo->append(__DIR__.'/schema/url-parameters-schema.json', 'url-parameters.schema');
-
 try{
     $routes = RouteFactory::fromJsonFile(
         __DIR__.'/routes.json',
         null,
-        $schemaRepo,
         $parserCollection
     );
 }catch(\Exception $e){
