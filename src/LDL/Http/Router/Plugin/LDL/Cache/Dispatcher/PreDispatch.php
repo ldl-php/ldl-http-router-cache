@@ -13,8 +13,8 @@ use Symfony\Component\Cache\Adapter\AdapterInterface as CacheAdapterInterface;
 class PreDispatch implements MiddlewareInterface
 {
     private const PURGE_SECRET_HEADER = 'X-HTTP-CACHE-SECRET';
-    private const NAMESPACE = 'PreDispatchNamespace';
-    private const NAME = 'PreDispatchName';
+    private const NAMESPACE = 'LDLPlugin';
+    private const NAME = 'RouteCache';
 
     /**
      * @var bool

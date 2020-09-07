@@ -11,8 +11,8 @@ use Symfony\Component\Cache\Adapter\AdapterInterface as CacheAdapterInterface;
 
 class PostDispatch implements PostDispatchMiddlewareInterface
 {
-    private const NAMESPACE = 'PostDispatchNamespace';
-    private const NAME = 'PostDispatchName';
+    private const NAMESPACE = 'LDLPlugin';
+    private const NAME = 'RouteCache';
 
     /**
      * @var bool
