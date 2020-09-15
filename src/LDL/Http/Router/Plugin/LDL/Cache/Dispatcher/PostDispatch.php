@@ -4,8 +4,8 @@ namespace LDL\Http\Router\Plugin\LDL\Cache\Dispatcher;
 
 use LDL\Http\Core\Request\RequestInterface;
 use LDL\Http\Core\Response\ResponseInterface;
+use LDL\Http\Router\Middleware\PostDispatchMiddlewareInterface;
 use LDL\Http\Router\Plugin\LDL\Cache\Config\RouteCacheConfig;
-use LDL\Http\Router\Route\Middleware\PostDispatchMiddlewareInterface;
 use LDL\Http\Router\Route\Route;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheAdapterInterface;
 

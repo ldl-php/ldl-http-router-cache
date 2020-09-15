@@ -4,13 +4,13 @@ namespace LDL\Http\Router\Plugin\LDL\Cache\Dispatcher;
 
 use LDL\Http\Core\Request\RequestInterface;
 use LDL\Http\Core\Response\ResponseInterface;
+use LDL\Http\Router\Middleware\PreDispatchMiddlewareInterface;
 use LDL\Http\Router\Plugin\LDL\Cache\Config\RouteCacheConfig;
 use LDL\Http\Router\Response\Parser\JsonResponseParser;
-use LDL\Http\Router\Route\Middleware\MiddlewareInterface;
 use LDL\Http\Router\Route\Route;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheAdapterInterface;
 
-class PreDispatch implements MiddlewareInterface
+class PreDispatch implements PreDispatchMiddlewareInterface
 {
     private const PURGE_SECRET_HEADER = 'X-HTTP-CACHE-SECRET';
     private const NAMESPACE = 'LDLPlugin';
