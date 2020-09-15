@@ -44,25 +44,25 @@ class Dispatch implements RouteDispatcherInterface, CacheableInterface
 $parserCollection = new RouteConfigParserCollection();
 $parserCollection->append(new ConfigParser());
 
-try{
-    $routes = RouteFactory::fromJsonFile(
-        __DIR__.'/routes.json',
-        null,
-        $parserCollection
-    );
-}catch(\Exception $e){
-    var_dump($e->getMessage());
-    die("jej");
-}
-
-$group = new RouteGroup('student', 'student', $routes);
-
 $response = new Response();
 
 $router = new Router(
     Request::createFromGlobals(),
     $response
 );
+
+try{
+    $routes = RouteFactory::fromJsonFile(
+        __DIR__.'/routes.json',
+        $router,
+        null,
+        $parserCollection
+    );
+}catch(\Exception $e){
+    return $e->getMessage();
+}
+
+$group = new RouteGroup('student', 'student', $routes);
 
 $router->addGroup($group);
 
