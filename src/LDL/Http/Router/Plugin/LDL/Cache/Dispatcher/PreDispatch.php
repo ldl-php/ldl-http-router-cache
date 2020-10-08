@@ -9,7 +9,7 @@ use LDL\Http\Core\Request\RequestInterface;
 use LDL\Http\Core\Response\ResponseInterface;
 use LDL\Http\Router\Middleware\MiddlewareInterface;
 use LDL\Http\Router\Plugin\LDL\Cache\Config\RouteCacheConfig;
-use LDL\Http\Router\Response\Parser\Json\JsonResponseParser;
+use LDL\Http\Router\Response\Parser\Repository\ResponseParserRepositoryInterface;
 use LDL\Http\Router\Route\Route;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheAdapterInterface;
 
@@ -33,11 +33,17 @@ class PreDispatch implements MiddlewareInterface
      */
     private $cacheConfig;
 
+    /**
+     * @var ResponseParserRepositoryInterface
+     */
+    private $responseParserRepository;
+
     public function __construct(
         bool $isActive,
         int $priority,
         CacheAdapterInterface $cacheAdapter,
-        RouteCacheConfig $cacheConfig
+        RouteCacheConfig $cacheConfig,
+        ResponseParserRepositoryInterface $responseParserRepository
     )
     {
         $this->_tActive = $isActive;
@@ -47,6 +53,7 @@ class PreDispatch implements MiddlewareInterface
 
         $this->cacheAdapter = $cacheAdapter;
         $this->cacheConfig = $cacheConfig;
+        $this->responseParserRepository = $responseParserRepository;
     }
 
     public function dispatch(
@@ -57,7 +64,7 @@ class PreDispatch implements MiddlewareInterface
     ): void
     {
         /**
-         * @var CacheableInterface $dispatcher
+         * @var RouteCacheKeyInterface $dispatcher
          */
         $dispatcher = $route->getConfig()->getDispatcher();
 
@@ -65,7 +72,11 @@ class PreDispatch implements MiddlewareInterface
 
         $providedCacheKey = $headers->get(self::PURGE_SECRET_HEADER);
 
-        $key = $dispatcher->getCacheKey($route, $request, $response);
+        $key = sprintf(
+            '%s.%s',
+            $dispatcher->getCacheKey($route, $request, $response),
+            $this->responseParserRepository->getSelectedKey()
+        );
 
         $now = new \DateTime('now');
 
@@ -94,9 +105,6 @@ class PreDispatch implements MiddlewareInterface
             return;
         }
 
-        $jsonParser = new JsonResponseParser();
-
         $response->setExpires($value['expires']);
-        $response->setContent($jsonParser->parse($value['data']));
     }
 }

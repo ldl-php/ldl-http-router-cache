@@ -9,6 +9,7 @@ use LDL\Http\Core\Request\RequestInterface;
 use LDL\Http\Core\Response\ResponseInterface;
 use LDL\Http\Router\Middleware\MiddlewareInterface;
 use LDL\Http\Router\Plugin\LDL\Cache\Config\RouteCacheConfig;
+use LDL\Http\Router\Response\Parser\Repository\ResponseParserRepositoryInterface;
 use LDL\Http\Router\Route\Route;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheAdapterInterface;
 
@@ -31,11 +32,14 @@ class PostDispatch implements MiddlewareInterface
      */
     private $cacheConfig;
 
+    private $responseParserRepository;
+
     public function __construct(
         bool $isActive,
         int $priority,
         CacheAdapterInterface $cacheAdapter,
-        RouteCacheConfig $cacheConfig
+        RouteCacheConfig $cacheConfig,
+        ResponseParserRepositoryInterface $responseParserRepository
     )
     {
         $this->_tActive = $isActive;
@@ -45,6 +49,7 @@ class PostDispatch implements MiddlewareInterface
 
         $this->cacheAdapter = $cacheAdapter;
         $this->cacheConfig = $cacheConfig;
+        $this->responseParserRepository = $responseParserRepository;
     }
 
     public function dispatch(
@@ -55,11 +60,17 @@ class PostDispatch implements MiddlewareInterface
     ): void
     {
         /**
-         * @var CacheableInterface $dispatcher
+         * @var RouteCacheKeyInterface $dispatcher
          */
         $dispatcher = $route->getConfig()->getDispatcher();
 
-        $item = $this->cacheAdapter->getItem($dispatcher->getCacheKey($route, $request, $response));
+        $key = sprintf(
+            '%s.%s',
+            $dispatcher->getCacheKey($route, $request, $response),
+            $this->responseParserRepository->getSelectedKey()
+        );
+
+        $item = $this->cacheAdapter->getItem($key);
 
         $expires = 0;
 

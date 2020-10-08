@@ -4,6 +4,7 @@ namespace LDL\Http\Router\Plugin\LDL\Cache\Config;
 
 use LDL\Http\Router\Plugin\LDL\Cache\Dispatcher\PreDispatch;
 use LDL\Http\Router\Plugin\LDL\Cache\Dispatcher\PostDispatch;
+use LDL\Http\Router\Response\Parser\Repository\ResponseParserRepositoryInterface;
 use LDL\Http\Router\Route\Config\Parser\RouteConfigParserInterface;
 use LDL\Http\Router\Route\Route;
 use Psr\Container\ContainerInterface;
@@ -13,6 +14,13 @@ class ConfigParser implements RouteConfigParserInterface
 {
     private const DEFAULT_IS_ACTIVE = true;
     private const DEFAULT_PRIORITY = 1;
+
+    private $responseParserRepository;
+
+    public function __construct(ResponseParserRepositoryInterface $responseParserRepository)
+    {
+        $this->responseParserRepository = $responseParserRepository;
+    }
 
     public function parse(array $data, Route $route, ContainerInterface $container = null, string $file = null): void
     {
@@ -37,11 +45,11 @@ class ConfigParser implements RouteConfigParserInterface
         $cacheConfig = RouteCacheConfig::fromArray($data['cache']['config']);
 
         $route->getConfig()->getPreDispatchMiddleware()->append(
-            new PreDispatch($isActive, $priority, $cacheAdapter, $cacheConfig)
+            new PreDispatch($isActive, $priority, $cacheAdapter, $cacheConfig, $this->responseParserRepository)
         );
 
         $route->getConfig()->getPostDispatchMiddleware()->append(
-            new PostDispatch($isActive, $priority, $cacheAdapter, $cacheConfig)
+            new PostDispatch($isActive, $priority, $cacheAdapter, $cacheConfig, $this->responseParserRepository)
         );
     }
 }

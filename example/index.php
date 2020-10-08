@@ -6,16 +6,18 @@ use LDL\Http\Core\Request\Request;
 use LDL\Http\Core\Request\RequestInterface;
 use LDL\Http\Core\Response\Response;
 use LDL\Http\Core\Response\ResponseInterface;
+use LDL\Http\Router\Response\Parser\Repository\ResponseParserRepository;
 use LDL\Http\Router\Route\Config\Parser\RouteConfigParserCollection;
 use LDL\Http\Router\Route\Dispatcher\RouteDispatcherInterface;
 use LDL\Http\Router\Route\Factory\RouteFactory;
 use LDL\Http\Router\Route\Group\RouteGroup;
 use LDL\Http\Router\Route\RouteInterface;
 use LDL\Http\Router\Router;
-use LDL\Http\Router\Plugin\LDL\Cache\Dispatcher\CacheableInterface;
+use LDL\Http\Router\Plugin\LDL\Cache\Dispatcher\RouteCacheKeyInterface;
 use LDL\Http\Router\Plugin\LDL\Cache\Config\ConfigParser;
+use LDL\Http\Router\Response\Parser\Json\JsonResponseParser;
 
-class Dispatch implements RouteDispatcherInterface, CacheableInterface
+class Dispatch implements RouteDispatcherInterface, RouteCacheKeyInterface
 {
     public function __construct()
     {
@@ -27,7 +29,7 @@ class Dispatch implements RouteDispatcherInterface, CacheableInterface
         ResponseInterface $response
     ): string
     {
-        return 'test2';
+        return 'test2.something';
     }
 
     public function dispatch(
@@ -40,9 +42,13 @@ class Dispatch implements RouteDispatcherInterface, CacheableInterface
         ];
     }
 }
+$jsonResponseParser = new JsonResponseParser();
+$responseParserRepository = new ResponseParserRepository();
+$responseParserRepository->append($jsonResponseParser);
+$responseParserRepository->select($jsonResponseParser->getItemKey());
 
 $parserCollection = new RouteConfigParserCollection();
-$parserCollection->append(new ConfigParser());
+$parserCollection->append(new ConfigParser($responseParserRepository));
 
 $response = new Response();
 
@@ -62,7 +68,7 @@ try{
     return $e->getMessage();
 }
 
-$group = new RouteGroup('student', 'student', $routes);
+$group = new RouteGroup('test', 'test', $routes);
 
 $router->addGroup($group);
 

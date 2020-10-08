@@ -6,7 +6,7 @@ use LDL\Http\Core\Request\RequestInterface;
 use LDL\Http\Core\Response\ResponseInterface;
 use LDL\Http\Router\Route\RouteInterface;
 
-interface CacheableInterface
+interface RouteCacheKeyInterface
 {
     /**
      * @param RouteInterface $route
