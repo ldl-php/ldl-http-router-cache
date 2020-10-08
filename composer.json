@@ -8,6 +8,8 @@
         "ldl-framework/http-router": "dev-master"
     },
     "license": "MIT",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "authors": [
         {
             "name": "Federico Stange",

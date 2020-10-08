@@ -2,29 +2,26 @@
 
 namespace LDL\Http\Router\Plugin\LDL\Cache\Dispatcher;
 
+use LDL\Framework\Base\Traits\IsActiveInterfaceTrait;
+use LDL\Framework\Base\Traits\NamespaceInterfaceTrait;
+use LDL\Framework\Base\Traits\PriorityInterfaceTrait;
 use LDL\Http\Core\Request\RequestInterface;
 use LDL\Http\Core\Response\ResponseInterface;
-use LDL\Http\Router\Middleware\PreDispatchMiddlewareInterface;
+use LDL\Http\Router\Middleware\MiddlewareInterface;
 use LDL\Http\Router\Plugin\LDL\Cache\Config\RouteCacheConfig;
-use LDL\Http\Router\Response\Parser\JsonResponseParser;
+use LDL\Http\Router\Response\Parser\Json\JsonResponseParser;
 use LDL\Http\Router\Route\Route;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheAdapterInterface;
 
-class PreDispatch implements PreDispatchMiddlewareInterface
+class PreDispatch implements MiddlewareInterface
 {
     private const PURGE_SECRET_HEADER = 'X-HTTP-CACHE-SECRET';
     private const NAMESPACE = 'LDLPlugin';
-    private const NAME = 'RouteCache';
+    private const NAME = 'RouteCachePreDispatch';
 
-    /**
-     * @var bool
-     */
-    private $isActive;
-
-    /**
-     * @var int
-     */
-    private $priority;
+    use NamespaceInterfaceTrait;
+    use IsActiveInterfaceTrait;
+    use PriorityInterfaceTrait;
 
     /**
      * @var CacheAdapterInterface
@@ -43,37 +40,20 @@ class PreDispatch implements PreDispatchMiddlewareInterface
         RouteCacheConfig $cacheConfig
     )
     {
-        $this->isActive = $isActive;
-        $this->priority = $priority;
+        $this->_tActive = $isActive;
+        $this->_tPriority = $priority;
+        $this->_tNamespace = self::NAMESPACE;
+        $this->_tName = self::NAME;
+
         $this->cacheAdapter = $cacheAdapter;
         $this->cacheConfig = $cacheConfig;
-    }
-
-    public function getNamespace(): string
-    {
-        return self::NAMESPACE;
-    }
-
-    public function getName(): string
-    {
-        return self::NAME;
-    }
-
-    public function isActive(): bool
-    {
-        return $this->isActive;
-    }
-
-    public function getPriority(): int
-    {
-        return $this->priority;
     }
 
     public function dispatch(
         Route $route,
         RequestInterface $request,
         ResponseInterface $response,
-        array $urlArguments
+        array $urlArguments = []
     ): void
     {
         /**
