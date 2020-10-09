@@ -14,8 +14,7 @@ use LDL\Http\Router\Route\Group\RouteGroup;
 use LDL\Http\Router\Route\RouteInterface;
 use LDL\Http\Router\Router;
 use LDL\Http\Router\Plugin\LDL\Cache\Dispatcher\RouteCacheKeyInterface;
-use LDL\Http\Router\Plugin\LDL\Cache\Config\ConfigParser;
-use LDL\Http\Router\Response\Parser\Json\JsonResponseParser;
+use LDL\Http\Router\Plugin\LDL\Cache\Config\CacheConfigParser;
 
 class Dispatch implements RouteDispatcherInterface, RouteCacheKeyInterface
 {
@@ -42,13 +41,7 @@ class Dispatch implements RouteDispatcherInterface, RouteCacheKeyInterface
         ];
     }
 }
-$jsonResponseParser = new JsonResponseParser();
-$responseParserRepository = new ResponseParserRepository();
-$responseParserRepository->append($jsonResponseParser);
-$responseParserRepository->select($jsonResponseParser->getItemKey());
 
-$parserCollection = new RouteConfigParserCollection();
-$parserCollection->append(new ConfigParser($responseParserRepository));
 
 $response = new Response();
 
@@ -56,6 +49,10 @@ $router = new Router(
     Request::createFromGlobals(),
     $response
 );
+
+
+$parserCollection = new RouteConfigParserCollection();
+$parserCollection->append(new CacheConfigParser($router));
 
 try{
     $routes = RouteFactory::fromJsonFile(

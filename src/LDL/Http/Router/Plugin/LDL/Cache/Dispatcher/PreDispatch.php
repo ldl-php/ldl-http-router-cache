@@ -15,7 +15,7 @@ use Symfony\Component\Cache\Adapter\AdapterInterface as CacheAdapterInterface;
 
 class PreDispatch implements MiddlewareInterface
 {
-    private const PURGE_SECRET_HEADER = 'X-HTTP-CACHE-SECRET';
+    private const PURGE_SECRET_HEADER = 'X-Http-Cache-Secret';
     private const NAMESPACE = 'LDLPlugin';
     private const NAME = 'RouteCachePreDispatch';
 
@@ -82,19 +82,31 @@ class PreDispatch implements MiddlewareInterface
 
         $item = $this->cacheAdapter->getItem($key);
 
+        $isPurge = $request->isPurge();
+
+        /**
+         * Data will be handled by the post dispatcher and stored in the cache adapter
+         */
         if(!$item->isHit()) {
+            $response->getHeaderBag()->set('X-Cache-Hit',0);
             return;
         }
 
+        /**
+         * Cache can be deleted only when the request provides the secret key
+         */
         if(
-            $request->isPurge() &&
+            $isPurge &&
             $this->cacheConfig->getSecretKey() &&
             $this->cacheConfig->getSecretKey() === $providedCacheKey
         ){
             $this->cacheAdapter->deleteItem($key);
         }
 
-        if($request->isPurge() && null === $this->cacheConfig->getSecretKey()){
+        /**
+         * Cache can be deleted by anyone without the use of a secret key
+         */
+        if($isPurge && null === $this->cacheConfig->getSecretKey()){
             $this->cacheAdapter->deleteItem($key);
         }
 
@@ -105,6 +117,13 @@ class PreDispatch implements MiddlewareInterface
             return;
         }
 
-        $response->setExpires($value['expires']);
+        /**
+         * We need to throw a CacheHitException to break the chain of execution.
+         * If we don't throw, everything else in the chain will get executed, ruining the whole purpose of caching.
+         */
+        if(!$isPurge){
+            throw new CacheHitException('Cache hit');
+        }
+
     }
 }

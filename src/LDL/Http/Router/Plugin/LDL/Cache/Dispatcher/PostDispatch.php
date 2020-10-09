@@ -56,9 +56,11 @@ class PostDispatch implements MiddlewareInterface
         Route $route,
         RequestInterface $request,
         ResponseInterface $response,
-        array $prevResults = []
+        array $urlArguments = []
     ): void
     {
+        $response->getHeaderBag()->set('X-Cache-Hit',1);
+
         /**
          * @var RouteCacheKeyInterface $dispatcher
          */
@@ -81,7 +83,7 @@ class PostDispatch implements MiddlewareInterface
             $response->setExpires($expires);
         }
 
-        $encode = ['expires' => $expires, 'data' => $prevResults];
+        $encode = ['expires' => $expires, 'data' => ''];
 
         $item->set($encode);
         $this->cacheAdapter->save($item);
