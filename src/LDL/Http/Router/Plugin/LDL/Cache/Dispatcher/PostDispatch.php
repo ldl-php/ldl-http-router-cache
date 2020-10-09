@@ -7,10 +7,11 @@ use LDL\Framework\Base\Traits\NamespaceInterfaceTrait;
 use LDL\Framework\Base\Traits\PriorityInterfaceTrait;
 use LDL\Http\Core\Request\RequestInterface;
 use LDL\Http\Core\Response\ResponseInterface;
+use LDL\Http\Router\Exception\UndispatchedRouterException;
 use LDL\Http\Router\Middleware\MiddlewareInterface;
 use LDL\Http\Router\Plugin\LDL\Cache\Config\RouteCacheConfig;
-use LDL\Http\Router\Response\Parser\Repository\ResponseParserRepositoryInterface;
 use LDL\Http\Router\Route\Route;
+use LDL\Http\Router\Router;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheAdapterInterface;
 
 class PostDispatch implements MiddlewareInterface
@@ -32,14 +33,17 @@ class PostDispatch implements MiddlewareInterface
      */
     private $cacheConfig;
 
-    private $responseParserRepository;
+    /**
+     * @var Router
+     */
+    private $router;
 
     public function __construct(
         bool $isActive,
         int $priority,
+        Router $router,
         CacheAdapterInterface $cacheAdapter,
-        RouteCacheConfig $cacheConfig,
-        ResponseParserRepositoryInterface $responseParserRepository
+        RouteCacheConfig $cacheConfig
     )
     {
         $this->_tActive = $isActive;
@@ -47,9 +51,9 @@ class PostDispatch implements MiddlewareInterface
         $this->_tNamespace = self::NAMESPACE;
         $this->_tName = self::NAME;
 
+        $this->router = $router;
         $this->cacheAdapter = $cacheAdapter;
         $this->cacheConfig = $cacheConfig;
-        $this->responseParserRepository = $responseParserRepository;
     }
 
     public function dispatch(
@@ -57,7 +61,7 @@ class PostDispatch implements MiddlewareInterface
         RequestInterface $request,
         ResponseInterface $response,
         array $urlArguments = []
-    ): void
+    ) : ?array
     {
         $response->getHeaderBag()->set('X-Cache-Hit',1);
 
@@ -69,7 +73,7 @@ class PostDispatch implements MiddlewareInterface
         $key = sprintf(
             '%s.%s',
             $dispatcher->getCacheKey($route, $request, $response),
-            $this->responseParserRepository->getSelectedKey()
+            $this->router->getResponseParserRepository()->getSelectedKey()
         );
 
         $item = $this->cacheAdapter->getItem($key);
@@ -83,10 +87,11 @@ class PostDispatch implements MiddlewareInterface
             $response->setExpires($expires);
         }
 
-        $encode = ['expires' => $expires, 'data' => ''];
+        $encode = ['expires' => $expires, 'data' => $this->router->getDispatcher()->getResult()];
 
         $item->set($encode);
         $this->cacheAdapter->save($item);
         $this->cacheAdapter->commit();
+        return null;
     }
 }

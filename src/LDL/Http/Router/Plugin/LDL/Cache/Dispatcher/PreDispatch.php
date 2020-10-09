@@ -34,16 +34,16 @@ class PreDispatch implements MiddlewareInterface
     private $cacheConfig;
 
     /**
-     * @var ResponseParserRepositoryInterface
+     * @var string
      */
-    private $responseParserRepository;
+    private $cacheKey;
 
     public function __construct(
         bool $isActive,
         int $priority,
+        string $cacheKey,
         CacheAdapterInterface $cacheAdapter,
-        RouteCacheConfig $cacheConfig,
-        ResponseParserRepositoryInterface $responseParserRepository
+        RouteCacheConfig $cacheConfig
     )
     {
         $this->_tActive = $isActive;
@@ -53,7 +53,7 @@ class PreDispatch implements MiddlewareInterface
 
         $this->cacheAdapter = $cacheAdapter;
         $this->cacheConfig = $cacheConfig;
-        $this->responseParserRepository = $responseParserRepository;
+        $this->cacheKey = $cacheKey;
     }
 
     public function dispatch(
@@ -61,7 +61,7 @@ class PreDispatch implements MiddlewareInterface
         RequestInterface $request,
         ResponseInterface $response,
         array $urlArguments = []
-    ): void
+    ) : ?array
     {
         /**
          * @var RouteCacheKeyInterface $dispatcher
@@ -75,7 +75,7 @@ class PreDispatch implements MiddlewareInterface
         $key = sprintf(
             '%s.%s',
             $dispatcher->getCacheKey($route, $request, $response),
-            $this->responseParserRepository->getSelectedKey()
+            $this->cacheKey
         );
 
         $now = new \DateTime('now');
@@ -89,7 +89,7 @@ class PreDispatch implements MiddlewareInterface
          */
         if(!$item->isHit()) {
             $response->getHeaderBag()->set('X-Cache-Hit',0);
-            return;
+            return null;
         }
 
         /**
@@ -114,7 +114,7 @@ class PreDispatch implements MiddlewareInterface
 
         if($now > $value['expires']){
             $this->cacheAdapter->deleteItem($item);
-            return;
+            return null;
         }
 
         /**
@@ -125,5 +125,6 @@ class PreDispatch implements MiddlewareInterface
             throw new CacheHitException('Cache hit');
         }
 
+        return null;
     }
 }

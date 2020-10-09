@@ -7,13 +7,11 @@ use LDL\Framework\Base\Traits\NamespaceInterfaceTrait;
 use LDL\Framework\Base\Traits\PriorityInterfaceTrait;
 use LDL\Http\Core\Response\ResponseInterface;
 use LDL\Http\Router\Handler\Exception\ExceptionHandlerInterface;
-use LDL\Http\Router\Plugin\LDL\Cache\Config\RouteCacheConfig;
-use LDL\Http\Router\Response\Parser\Repository\ResponseParserRepositoryInterface;
-use LDL\Http\Router\Response\Parser\ResponseParserInterface;
+use LDL\Http\Router\Handler\Exception\ModifiesResponseInterface;
 use LDL\Http\Router\Router;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 
-class CacheHitExceptionHandler implements ExceptionHandlerInterface
+class CacheHitExceptionHandler implements ExceptionHandlerInterface, ModifiesResponseInterface
 {
     use NamespaceInterfaceTrait;
     use IsActiveInterfaceTrait;
@@ -25,13 +23,12 @@ class CacheHitExceptionHandler implements ExceptionHandlerInterface
     private $cacheAdapter;
 
     /**
-     * @var RouteCacheConfig
+     * @var array
      */
-    private $cacheConfig;
+    private $content;
 
     public function __construct(
-        AdapterInterface $cacheAdapter,
-        RouteCacheConfig $config
+        AdapterInterface $cacheAdapter
     )
     {
         $this->_tNamespace = 'LDLCachePlugin';
@@ -42,6 +39,11 @@ class CacheHitExceptionHandler implements ExceptionHandlerInterface
         $this->cacheAdapter = $cacheAdapter;
     }
 
+    public function getContent(): array
+    {
+        return $this->content;
+    }
+
     public function handle(Router $router, \Exception $e, string $context): ?int
     {
         if(!$e instanceof CacheHitException){
@@ -49,10 +51,6 @@ class CacheHitExceptionHandler implements ExceptionHandlerInterface
         }
 
         $responseParserRepository = $router->getResponseParserRepository();
-        /**
-         * @var ResponseParserInterface $responseParser
-         */
-        $responseParser = $responseParserRepository->getSelectedItem();
 
         $route = $router->getCurrentRoute();
 
@@ -67,15 +65,15 @@ class CacheHitExceptionHandler implements ExceptionHandlerInterface
         );
 
         $item = $this->cacheAdapter->getItem($key)->get();
+
         /**
          * @var \DateTime $expiresAt
          */
         $expiresAt = $item['expires'];
+        $this->content = $item['data'];
 
-        $router->getResponse()->setContent($responseParser->parse($item['data'], 'cache', $router));
         $router->getResponse()->setExpires($expiresAt);
-        $router->getResponse()->setStatusCode(ResponseInterface::HTTP_CODE_NOT_MODIFIED);
 
-        return null;
+        return ResponseInterface::HTTP_CODE_OK;
     }
 }

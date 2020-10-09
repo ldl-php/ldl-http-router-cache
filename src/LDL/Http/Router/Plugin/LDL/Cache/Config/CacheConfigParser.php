@@ -55,9 +55,9 @@ class CacheConfigParser implements RouteConfigParserInterface
             new PreDispatch(
                 $isActive,
                 $priority,
+                $this->router->getResponseParserRepository()->getSelectedKey(),
                 $cacheAdapter,
-                $cacheConfig,
-                $this->router->getResponseParserRepository()
+                $cacheConfig
             )
         );
 
@@ -65,14 +65,14 @@ class CacheConfigParser implements RouteConfigParserInterface
             new PostDispatch(
                 $isActive,
                 $priority,
+                $this->router,
                 $cacheAdapter,
-                $cacheConfig,
-                $this->router->getResponseParserRepository()
+                $cacheConfig
             )
         );
 
         $this->router
             ->getExceptionHandlerCollection()
-            ->append(new CacheHitExceptionHandler($cacheAdapter, $cacheConfig));
+            ->append(new CacheHitExceptionHandler($cacheAdapter));
     }
 }
