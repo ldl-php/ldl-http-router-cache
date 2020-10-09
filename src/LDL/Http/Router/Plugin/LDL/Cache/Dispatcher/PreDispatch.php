@@ -88,7 +88,6 @@ class PreDispatch implements MiddlewareInterface
          * Data will be handled by the post dispatcher and stored in the cache adapter
          */
         if(!$item->isHit()) {
-            $response->getHeaderBag()->set('X-Cache-Hit',0);
             return null;
         }
 

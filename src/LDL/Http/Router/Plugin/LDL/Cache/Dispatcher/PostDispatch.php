@@ -63,7 +63,7 @@ class PostDispatch implements MiddlewareInterface
         array $urlArguments = []
     ) : ?array
     {
-        $response->getHeaderBag()->set('X-Cache-Hit',1);
+        $response->getHeaderBag()->set('X-Cache-Hit',0);
 
         /**
          * @var RouteCacheKeyInterface $dispatcher

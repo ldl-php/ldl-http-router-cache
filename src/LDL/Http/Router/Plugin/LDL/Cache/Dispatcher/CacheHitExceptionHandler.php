@@ -50,6 +50,7 @@ class CacheHitExceptionHandler implements ExceptionHandlerInterface, ModifiesRes
             return null;
         }
 
+        $router->getResponse()->getHeaderBag()->set('X-Cache-Hit', 1);
         $responseParserRepository = $router->getResponseParserRepository();
 
         $route = $router->getCurrentRoute();

@@ -51,7 +51,7 @@ class CacheConfigParser implements RouteConfigParserInterface
 
         $cacheConfig = RouteCacheConfig::fromArray($data['cache']['config']);
 
-        $route->getConfig()->getPreDispatchMiddleware()->append(
+        $this->router->getPreDispatchMiddleware()->append(
             new PreDispatch(
                 $isActive,
                 $priority,
@@ -61,15 +61,16 @@ class CacheConfigParser implements RouteConfigParserInterface
             )
         );
 
-        $route->getConfig()->getPostDispatchMiddleware()->append(
-            new PostDispatch(
-                $isActive,
-                $priority,
-                $this->router,
-                $cacheAdapter,
-                $cacheConfig
-            )
-        );
+        $this->router->getPostDispatchMiddleware()
+            ->append(
+                new PostDispatch(
+                    $isActive,
+                    $priority,
+                    $this->router,
+                    $cacheAdapter,
+                    $cacheConfig
+                )
+            );
 
         $this->router
             ->getExceptionHandlerCollection()
