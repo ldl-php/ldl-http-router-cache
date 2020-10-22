@@ -5,9 +5,8 @@ namespace LDL\Http\Router\Plugin\LDL\Cache\Config;
 use LDL\Http\Router\Plugin\LDL\Cache\Dispatcher\CacheHitExceptionHandler;
 use LDL\Http\Router\Plugin\LDL\Cache\Dispatcher\PreDispatch;
 use LDL\Http\Router\Plugin\LDL\Cache\Dispatcher\PostDispatch;
-use LDL\Http\Router\Response\Parser\Repository\ResponseParserRepositoryInterface;
 use LDL\Http\Router\Route\Config\Parser\RouteConfigParserInterface;
-use LDL\Http\Router\Route\Route;
+use LDL\Http\Router\Route\RouteInterface;
 use LDL\Http\Router\Router;
 use Psr\Container\ContainerInterface;
 use LDL\Http\Router\Helper\ClassOrContainer;
@@ -26,7 +25,7 @@ class CacheConfigParser implements RouteConfigParserInterface
 
     public function parse(
         array $data,
-        Route $route,
+        RouteInterface $route,
         ContainerInterface $container = null,
         string $file = null
     ): void

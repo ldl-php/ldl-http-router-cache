@@ -11,7 +11,9 @@ use LDL\Http\Router\Middleware\MiddlewareInterface;
 use LDL\Http\Router\Plugin\LDL\Cache\Config\RouteCacheConfig;
 use LDL\Http\Router\Response\Parser\Repository\ResponseParserRepositoryInterface;
 use LDL\Http\Router\Route\Route;
+use LDL\Http\Router\Route\RouteInterface;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheAdapterInterface;
+use Symfony\Component\HttpFoundation\ParameterBag;
 
 class PreDispatch implements MiddlewareInterface
 {
@@ -57,10 +59,10 @@ class PreDispatch implements MiddlewareInterface
     }
 
     public function dispatch(
-        Route $route,
+        RouteInterface $route,
         RequestInterface $request,
         ResponseInterface $response,
-        array $urlArguments = []
+        ParameterBag $urlParameters = null
     ) : ?array
     {
         /**

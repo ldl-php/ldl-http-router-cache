@@ -6,7 +6,6 @@ use LDL\Http\Core\Request\Request;
 use LDL\Http\Core\Request\RequestInterface;
 use LDL\Http\Core\Response\Response;
 use LDL\Http\Core\Response\ResponseInterface;
-use LDL\Http\Router\Response\Parser\Repository\ResponseParserRepository;
 use LDL\Http\Router\Route\Config\Parser\RouteConfigParserCollection;
 use LDL\Http\Router\Route\Dispatcher\RouteDispatcherInterface;
 use LDL\Http\Router\Route\Factory\RouteFactory;
@@ -15,12 +14,10 @@ use LDL\Http\Router\Route\RouteInterface;
 use LDL\Http\Router\Router;
 use LDL\Http\Router\Plugin\LDL\Cache\Dispatcher\RouteCacheKeyInterface;
 use LDL\Http\Router\Plugin\LDL\Cache\Config\CacheConfigParser;
+use Symfony\Component\HttpFoundation\ParameterBag;
 
-class Dispatch implements RouteDispatcherInterface, RouteCacheKeyInterface
+class Dispatcher implements RouteDispatcherInterface, RouteCacheKeyInterface
 {
-    public function __construct()
-    {
-    }
 
     public function getCacheKey(
         RouteInterface $route,
@@ -33,8 +30,9 @@ class Dispatch implements RouteDispatcherInterface, RouteCacheKeyInterface
 
     public function dispatch(
         RequestInterface $request,
-        ResponseInterface $response
-    ) : array
+        ResponseInterface $response,
+        ParameterBag $urlParameters=null
+    ) : ?array
     {
         return [
             'name' => $request->get('name')

@@ -10,6 +10,7 @@ use LDL\Http\Router\Handler\Exception\ExceptionHandlerInterface;
 use LDL\Http\Router\Handler\Exception\ModifiesResponseInterface;
 use LDL\Http\Router\Router;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
+use Symfony\Component\HttpFoundation\ParameterBag;
 
 class CacheHitExceptionHandler implements ExceptionHandlerInterface, ModifiesResponseInterface
 {
@@ -44,7 +45,12 @@ class CacheHitExceptionHandler implements ExceptionHandlerInterface, ModifiesRes
         return $this->content;
     }
 
-    public function handle(Router $router, \Exception $e, string $context): ?int
+    public function handle(
+        Router $router,
+        \Exception $e,
+        string $context,
+        ParameterBag $parameters=null
+    ): ?int
     {
         if(!$e instanceof CacheHitException){
             return null;

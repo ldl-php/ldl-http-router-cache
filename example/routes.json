@@ -11,7 +11,7 @@
       "name": "test",
       "description": "A test route",
       "dispatcher": {
-        "class": "Dispatch"
+        "class": "Dispatcher"
       },
       "customConfig": {
         "test": "1"

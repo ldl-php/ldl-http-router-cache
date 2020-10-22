@@ -7,12 +7,13 @@ use LDL\Framework\Base\Traits\NamespaceInterfaceTrait;
 use LDL\Framework\Base\Traits\PriorityInterfaceTrait;
 use LDL\Http\Core\Request\RequestInterface;
 use LDL\Http\Core\Response\ResponseInterface;
-use LDL\Http\Router\Exception\UndispatchedRouterException;
 use LDL\Http\Router\Middleware\MiddlewareInterface;
 use LDL\Http\Router\Plugin\LDL\Cache\Config\RouteCacheConfig;
 use LDL\Http\Router\Route\Route;
+use LDL\Http\Router\Route\RouteInterface;
 use LDL\Http\Router\Router;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheAdapterInterface;
+use Symfony\Component\HttpFoundation\ParameterBag;
 
 class PostDispatch implements MiddlewareInterface
 {
@@ -57,10 +58,10 @@ class PostDispatch implements MiddlewareInterface
     }
 
     public function dispatch(
-        Route $route,
+        RouteInterface $route,
         RequestInterface $request,
         ResponseInterface $response,
-        array $urlArguments = []
+        ParameterBag $urlParameters = null
     ) : ?array
     {
         $response->getHeaderBag()->set('X-Cache-Hit',0);
