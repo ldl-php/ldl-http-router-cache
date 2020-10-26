@@ -3,24 +3,20 @@
 namespace LDL\Http\Router\Plugin\LDL\Cache\Dispatcher;
 
 use LDL\Framework\Base\Traits\IsActiveInterfaceTrait;
-use LDL\Framework\Base\Traits\NamespaceInterfaceTrait;
 use LDL\Framework\Base\Traits\PriorityInterfaceTrait;
 use LDL\Http\Core\Request\RequestInterface;
 use LDL\Http\Core\Response\ResponseInterface;
 use LDL\Http\Router\Middleware\MiddlewareInterface;
 use LDL\Http\Router\Plugin\LDL\Cache\Config\RouteCacheConfig;
-use LDL\Http\Router\Route\Route;
+use LDL\Http\Router\Plugin\LDL\Cache\Key\Generator\CacheKeyGeneratorInterface;
 use LDL\Http\Router\Route\RouteInterface;
-use LDL\Http\Router\Router;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheAdapterInterface;
 use Symfony\Component\HttpFoundation\ParameterBag;
 
-class PostDispatch implements MiddlewareInterface
+class CachePostDispatch implements MiddlewareInterface
 {
-    private const NAMESPACE = 'LDLPlugin';
-    private const NAME = 'RouteCachePostDispatch';
+    private const NAME = 'ldl.router.cache.preDispatch';
 
-    use NamespaceInterfaceTrait;
     use IsActiveInterfaceTrait;
     use PriorityInterfaceTrait;
 
@@ -35,26 +31,29 @@ class PostDispatch implements MiddlewareInterface
     private $cacheConfig;
 
     /**
-     * @var Router
+     * @var CacheKeyGeneratorInterface
      */
-    private $router;
+    private $cacheKeyGenerator;
 
     public function __construct(
         bool $isActive,
         int $priority,
-        Router $router,
         CacheAdapterInterface $cacheAdapter,
-        RouteCacheConfig $cacheConfig
+        RouteCacheConfig $cacheConfig,
+        CacheKeyGeneratorInterface $keyGenerator
     )
     {
         $this->_tActive = $isActive;
         $this->_tPriority = $priority;
-        $this->_tNamespace = self::NAMESPACE;
-        $this->_tName = self::NAME;
 
-        $this->router = $router;
         $this->cacheAdapter = $cacheAdapter;
         $this->cacheConfig = $cacheConfig;
+        $this->cacheKeyGenerator = $keyGenerator;
+    }
+
+    public function getName(): string
+    {
+        return self::NAME;
     }
 
     public function dispatch(
@@ -64,20 +63,16 @@ class PostDispatch implements MiddlewareInterface
         ParameterBag $urlParameters = null
     ) : ?array
     {
+        $router = $route->getRouter();
         $response->getHeaderBag()->set('X-Cache-Hit',0);
 
-        /**
-         * @var RouteCacheKeyInterface $dispatcher
-         */
-        $dispatcher = $route->getConfig()->getDispatcher();
-
-        $key = sprintf(
+        $storageKey = sprintf(
             '%s.%s',
-            $dispatcher->getCacheKey($route, $request, $response),
-            $this->router->getResponseParserRepository()->getSelectedKey()
+            $router->getResponseParserRepository()->getSelectedKey(),
+            $this->cacheKeyGenerator->generate($route, $urlParameters)
         );
 
-        $item = $this->cacheAdapter->getItem($key);
+        $item = $this->cacheAdapter->getItem($storageKey);
 
         $expires = 0;
 
@@ -88,11 +83,16 @@ class PostDispatch implements MiddlewareInterface
             $response->setExpires($expires);
         }
 
-        $encode = ['expires' => $expires, 'data' => $this->router->getDispatcher()->getResult()];
+        $encode = [
+            'expires' => $expires,
+            'data' => $route->getRouter()->getDispatcher()->getResult()
+        ];
 
         $item->set($encode);
         $this->cacheAdapter->save($item);
         $this->cacheAdapter->commit();
+
         return null;
     }
+
 }

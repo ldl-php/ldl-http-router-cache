@@ -3,25 +3,21 @@
 namespace LDL\Http\Router\Plugin\LDL\Cache\Dispatcher;
 
 use LDL\Framework\Base\Traits\IsActiveInterfaceTrait;
-use LDL\Framework\Base\Traits\NamespaceInterfaceTrait;
 use LDL\Framework\Base\Traits\PriorityInterfaceTrait;
 use LDL\Http\Core\Request\RequestInterface;
 use LDL\Http\Core\Response\ResponseInterface;
 use LDL\Http\Router\Middleware\MiddlewareInterface;
 use LDL\Http\Router\Plugin\LDL\Cache\Config\RouteCacheConfig;
-use LDL\Http\Router\Response\Parser\Repository\ResponseParserRepositoryInterface;
-use LDL\Http\Router\Route\Route;
+use LDL\Http\Router\Plugin\LDL\Cache\Key\Generator\CacheKeyGeneratorInterface;
 use LDL\Http\Router\Route\RouteInterface;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheAdapterInterface;
 use Symfony\Component\HttpFoundation\ParameterBag;
 
-class PreDispatch implements MiddlewareInterface
+class CachePreDispatch implements MiddlewareInterface
 {
     private const PURGE_SECRET_HEADER = 'X-Http-Cache-Secret';
-    private const NAMESPACE = 'LDLPlugin';
-    private const NAME = 'RouteCachePreDispatch';
+    public const NAME = 'ldl.router.cache.preDispatch';
 
-    use NamespaceInterfaceTrait;
     use IsActiveInterfaceTrait;
     use PriorityInterfaceTrait;
 
@@ -36,26 +32,28 @@ class PreDispatch implements MiddlewareInterface
     private $cacheConfig;
 
     /**
-     * @var string
+     * @var CacheKeyGeneratorInterface
      */
-    private $cacheKey;
+    private $cacheKeyGenerator;
 
     public function __construct(
         bool $isActive,
         int $priority,
-        string $cacheKey,
         CacheAdapterInterface $cacheAdapter,
-        RouteCacheConfig $cacheConfig
+        RouteCacheConfig $cacheConfig,
+        CacheKeyGeneratorInterface $cacheKeyGenerator
     )
     {
         $this->_tActive = $isActive;
         $this->_tPriority = $priority;
-        $this->_tNamespace = self::NAMESPACE;
-        $this->_tName = self::NAME;
-
         $this->cacheAdapter = $cacheAdapter;
         $this->cacheConfig = $cacheConfig;
-        $this->cacheKey = $cacheKey;
+        $this->cacheKeyGenerator = $cacheKeyGenerator;
+    }
+
+    public function getName(): string
+    {
+        return self::NAME;
     }
 
     public function dispatch(
@@ -65,24 +63,20 @@ class PreDispatch implements MiddlewareInterface
         ParameterBag $urlParameters = null
     ) : ?array
     {
-        /**
-         * @var RouteCacheKeyInterface $dispatcher
-         */
-        $dispatcher = $route->getConfig()->getDispatcher();
-
+        $router = $route->getRouter();
         $headers = $request->getHeaderBag();
 
         $providedCacheKey = $headers->get(self::PURGE_SECRET_HEADER);
 
-        $key = sprintf(
+        $storageKey = sprintf(
             '%s.%s',
-            $dispatcher->getCacheKey($route, $request, $response),
-            $this->cacheKey
+            $router->getResponseParserRepository()->getSelectedKey(),
+            $this->cacheKeyGenerator->generate($router->getCurrentRoute(), $urlParameters)
         );
 
         $now = new \DateTime('now');
 
-        $item = $this->cacheAdapter->getItem($key);
+        $item = $this->cacheAdapter->getItem($storageKey);
 
         $isPurge = $request->isPurge();
 
@@ -101,20 +95,20 @@ class PreDispatch implements MiddlewareInterface
             $this->cacheConfig->getSecretKey() &&
             $this->cacheConfig->getSecretKey() === $providedCacheKey
         ){
-            $this->cacheAdapter->deleteItem($key);
+            $this->cacheAdapter->deleteItem($storageKey);
         }
 
         /**
          * Cache can be deleted by anyone without the use of a secret key
          */
         if($isPurge && null === $this->cacheConfig->getSecretKey()){
-            $this->cacheAdapter->deleteItem($key);
+            $this->cacheAdapter->deleteItem($storageKey);
         }
 
         $value = $item->get();
 
         if($now > $value['expires']){
-            $this->cacheAdapter->deleteItem($item);
+            $this->cacheAdapter->deleteItem($storageKey);
             return null;
         }
 

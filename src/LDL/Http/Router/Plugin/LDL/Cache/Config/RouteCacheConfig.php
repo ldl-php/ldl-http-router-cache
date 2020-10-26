@@ -20,6 +20,11 @@ class RouteCacheConfig
     private $purgeable;
 
     /**
+     * @var string
+     */
+    private $keyGenerator;
+
+    /**
      * @var bool
      */
     private $enabled = true;
@@ -31,6 +36,7 @@ class RouteCacheConfig
         return new static(
             (bool) $merge['purgeable'],
             (bool) $merge['enabled'],
+            $merge['keyGenerator'],
             $merge['expiresAt'],
             $merge['secretKey']
         );
@@ -38,9 +44,10 @@ class RouteCacheConfig
 
     public function __construct(
         bool $purgeable,
-        bool $enabled = true,
-        ?string $expiresAt=null,
-        ?string $secretKey=null
+        bool $enabled,
+        ?string $keyGenerator,
+        ?string $expiresAt,
+        ?string $secretKey
     )
     {
         if(null !== $expiresAt){
@@ -50,7 +57,8 @@ class RouteCacheConfig
         $this->setEnabled($enabled)
             ->setExpiresAt($expiresAt)
             ->setSecretKey($secretKey)
-            ->setPurgeable($purgeable);
+            ->setPurgeable($purgeable)
+            ->setKeyGenerator($keyGenerator);
     }
 
     /**
@@ -78,6 +86,14 @@ class RouteCacheConfig
     }
 
     /**
+     * @return string|null
+     */
+    public function getKeyGenerator() : ?string
+    {
+        return $this->keyGenerator;
+    }
+
+    /**
      * @return bool
      */
     public function isEnabled() : bool
@@ -85,6 +101,7 @@ class RouteCacheConfig
         return $this->enabled;
     }
 
+    //<editor-fold desc="Private methods">
     /**
      * @param bool $enabled
      * @return RouteCacheConfig
@@ -125,4 +142,14 @@ class RouteCacheConfig
         return $this;
     }
 
+    /**
+     * @param string|null $keyGenerator
+     * @return RouteCacheConfig
+     */
+    private function setKeyGenerator(?string $keyGenerator) : self
+    {
+        $this->keyGenerator = $keyGenerator;
+        return $this;
+    }
+    //</editor-fold>
 }

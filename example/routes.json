@@ -10,21 +10,14 @@
       },
       "name": "test",
       "description": "A test route",
-      "dispatcher": {
-        "class": "Dispatcher"
-      },
-      "customConfig": {
-        "test": "1"
-      },
+      "dispatcher": "test.cache.dispatcher",
       "cache": {
-        "adapter": {
-          "class": "Symfony\\Component\\Cache\\Adapter\\FilesystemAdapter"
-        },
         "active": true,
         "priority": 1,
+        "adapter": "fs.adapter",
         "config": {
-          "purgeable": false,
           "enabled": true,
+          "purgeable": false,
           "expiresAt": "+1 minutes"
         }
       }

@@ -8,13 +8,15 @@ use LDL\Framework\Base\Traits\PriorityInterfaceTrait;
 use LDL\Http\Core\Response\ResponseInterface;
 use LDL\Http\Router\Handler\Exception\ExceptionHandlerInterface;
 use LDL\Http\Router\Handler\Exception\ModifiesResponseInterface;
+use LDL\Http\Router\Plugin\LDL\Cache\Key\Generator\CacheKeyGeneratorInterface;
 use LDL\Http\Router\Router;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\HttpFoundation\ParameterBag;
 
 class CacheHitExceptionHandler implements ExceptionHandlerInterface, ModifiesResponseInterface
 {
-    use NamespaceInterfaceTrait;
+    public const NAME = 'ldl.router.cache.exception.handler';
+
     use IsActiveInterfaceTrait;
     use PriorityInterfaceTrait;
 
@@ -24,20 +26,30 @@ class CacheHitExceptionHandler implements ExceptionHandlerInterface, ModifiesRes
     private $cacheAdapter;
 
     /**
+     * @var CacheKeyGeneratorInterface
+     */
+    private $cacheKeyGenerator;
+
+    /**
      * @var array
      */
     private $content;
 
     public function __construct(
-        AdapterInterface $cacheAdapter
+        AdapterInterface $cacheAdapter,
+        CacheKeyGeneratorInterface $cacheKeyGenerator
     )
     {
-        $this->_tNamespace = 'LDLCachePlugin';
-        $this->_tName = 'Cache exception handler';
         $this->_tActive = true;
-        $this->_tPriority = 9999;
+        $this->_tPriority = 1;
+        $this->cacheKeyGenerator = $cacheKeyGenerator;
 
         $this->cacheAdapter = $cacheAdapter;
+    }
+
+    public function getName() : string
+    {
+        return self::NAME;
     }
 
     public function getContent(): array
@@ -48,7 +60,6 @@ class CacheHitExceptionHandler implements ExceptionHandlerInterface, ModifiesRes
     public function handle(
         Router $router,
         \Exception $e,
-        string $context,
         ParameterBag $parameters=null
     ): ?int
     {
@@ -59,19 +70,13 @@ class CacheHitExceptionHandler implements ExceptionHandlerInterface, ModifiesRes
         $router->getResponse()->getHeaderBag()->set('X-Cache-Hit', 1);
         $responseParserRepository = $router->getResponseParserRepository();
 
-        $route = $router->getCurrentRoute();
-
-        $dispatcher = $router->getCurrentRoute()
-            ->getConfig()
-            ->getDispatcher();
-
-        $key = sprintf(
+        $storageKey = sprintf(
             '%s.%s',
-            $dispatcher->getCacheKey($route, $router->getRequest(), $router->getResponse()),
-            $responseParserRepository->getSelectedKey()
+            $responseParserRepository->getSelectedKey(),
+            $this->cacheKeyGenerator->generate($router->getCurrentRoute(), $parameters)
         );
 
-        $item = $this->cacheAdapter->getItem($key)->get();
+        $item = $this->cacheAdapter->getItem($storageKey)->get();
 
         /**
          * @var \DateTime $expiresAt
