@@ -2,24 +2,19 @@
 
 namespace LDL\Http\Router\Plugin\LDL\Cache\Dispatcher;
 
-use LDL\Framework\Base\Traits\IsActiveInterfaceTrait;
-use LDL\Framework\Base\Traits\PriorityInterfaceTrait;
 use LDL\Http\Core\Request\RequestInterface;
 use LDL\Http\Core\Response\ResponseInterface;
-use LDL\Http\Router\Middleware\MiddlewareInterface;
+use LDL\Http\Router\Middleware\AbstractMiddleware;
 use LDL\Http\Router\Plugin\LDL\Cache\Config\RouteCacheConfig;
 use LDL\Http\Router\Plugin\LDL\Cache\Key\Generator\CacheKeyGeneratorInterface;
 use LDL\Http\Router\Route\RouteInterface;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheAdapterInterface;
 use Symfony\Component\HttpFoundation\ParameterBag;
 
-class CachePreDispatch implements MiddlewareInterface
+class CachePreDispatch extends AbstractMiddleware
 {
     private const PURGE_SECRET_HEADER = 'X-Http-Cache-Secret';
     public const NAME = 'ldl.router.cache.preDispatch';
-
-    use IsActiveInterfaceTrait;
-    use PriorityInterfaceTrait;
 
     /**
      * @var CacheAdapterInterface
@@ -36,19 +31,19 @@ class CachePreDispatch implements MiddlewareInterface
      */
     private $cacheKeyGenerator;
 
-    public function __construct(
+    public function init(
         bool $isActive,
         int $priority,
         CacheAdapterInterface $cacheAdapter,
         RouteCacheConfig $cacheConfig,
         CacheKeyGeneratorInterface $cacheKeyGenerator
-    )
+    ) : void
     {
-        $this->_tActive = $isActive;
-        $this->_tPriority = $priority;
         $this->cacheAdapter = $cacheAdapter;
         $this->cacheConfig = $cacheConfig;
         $this->cacheKeyGenerator = $cacheKeyGenerator;
+        $this->setActive($isActive);
+        $this->setPriority($priority);
     }
 
     public function getName(): string
@@ -56,11 +51,11 @@ class CachePreDispatch implements MiddlewareInterface
         return self::NAME;
     }
 
-    public function dispatch(
-        RouteInterface $route,
+    public function _dispatch(
         RequestInterface $request,
         ResponseInterface $response,
-        ParameterBag $urlParameters = null
+        RouteInterface $route = null,
+        ParameterBag $urlParams = null
     ) : ?array
     {
         $router = $route->getRouter();
@@ -71,7 +66,7 @@ class CachePreDispatch implements MiddlewareInterface
         $storageKey = sprintf(
             '%s.%s',
             $router->getResponseParserRepository()->getSelectedKey(),
-            $this->cacheKeyGenerator->generate($router->getCurrentRoute(), $urlParameters)
+            $this->cacheKeyGenerator->generate($router->getCurrentRoute(), $urlParams)
         );
 
         $now = new \DateTime('now');

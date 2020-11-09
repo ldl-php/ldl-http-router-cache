@@ -6,14 +6,14 @@ use LDL\Framework\Base\Traits\IsActiveInterfaceTrait;
 use LDL\Framework\Base\Traits\PriorityInterfaceTrait;
 use LDL\Http\Core\Request\RequestInterface;
 use LDL\Http\Core\Response\ResponseInterface;
-use LDL\Http\Router\Middleware\MiddlewareInterface;
+use LDL\Http\Router\Middleware\AbstractMiddleware;
 use LDL\Http\Router\Plugin\LDL\Cache\Config\RouteCacheConfig;
 use LDL\Http\Router\Plugin\LDL\Cache\Key\Generator\CacheKeyGeneratorInterface;
 use LDL\Http\Router\Route\RouteInterface;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheAdapterInterface;
 use Symfony\Component\HttpFoundation\ParameterBag;
 
-class CachePostDispatch implements MiddlewareInterface
+class CachePostDispatch extends AbstractMiddleware
 {
     private const NAME = 'ldl.router.cache.preDispatch';
 
@@ -35,13 +35,13 @@ class CachePostDispatch implements MiddlewareInterface
      */
     private $cacheKeyGenerator;
 
-    public function __construct(
+    public function init(
         bool $isActive,
         int $priority,
         CacheAdapterInterface $cacheAdapter,
         RouteCacheConfig $cacheConfig,
         CacheKeyGeneratorInterface $keyGenerator
-    )
+    ) : void
     {
         $this->_tActive = $isActive;
         $this->_tPriority = $priority;
@@ -56,11 +56,11 @@ class CachePostDispatch implements MiddlewareInterface
         return self::NAME;
     }
 
-    public function dispatch(
-        RouteInterface $route,
+    public function _dispatch(
         RequestInterface $request,
         ResponseInterface $response,
-        ParameterBag $urlParameters = null
+        RouteInterface $route = null,
+        ParameterBag $urlParams = null
     ) : ?array
     {
         $router = $route->getRouter();
@@ -69,7 +69,7 @@ class CachePostDispatch implements MiddlewareInterface
         $storageKey = sprintf(
             '%s.%s',
             $router->getResponseParserRepository()->getSelectedKey(),
-            $this->cacheKeyGenerator->generate($route, $urlParameters)
+            $this->cacheKeyGenerator->generate($route, $urlParams)
         );
 
         $item = $this->cacheAdapter->getItem($storageKey);
