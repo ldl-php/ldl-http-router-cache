@@ -11,6 +11,11 @@
       "name": "test",
       "description": "A test route",
       "dispatcher": "test.cache.dispatcher",
+      "middleware": {
+        "preDispatch": "cachePreDispatch",
+        "dispatchers": "cacheDispatcher",
+        "postDispatch": "cachePostDispatch"
+      },
       "cache": {
         "active": true,
         "priority": 1,
