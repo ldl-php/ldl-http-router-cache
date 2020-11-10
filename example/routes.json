@@ -1,19 +1,27 @@
 {
   "routes": [
     {
+      "name": "test",
       "version": "1.0",
+      "description": "A test route",
       "url": {
         "prefix": "list/{urlName}"
       },
       "request": {
         "method": "get"
       },
-      "name": "test",
-      "description": "A test route",
-      "dispatcher": "test.cache.dispatcher",
+      "middleware": {
+        "preDispatch": [
+          "cache.preDispatch"
+        ],
+        "dispatchers": [
+          "test.cache.dispatcher"
+        ],
+        "postDispatch": [
+          "cache.postDispatch"
+        ]
+      },
       "cache": {
-        "active": true,
-        "priority": 1,
         "adapter": "fs.adapter",
         "config": {
           "enabled": true,

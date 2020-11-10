@@ -17,7 +17,7 @@ class StaticCacheKeyGenerator extends AbstractCacheKeyGenerator
 
     public function generate(
         RouteInterface $route,
-        ParameterBag $urlParameters
+        ParameterBag $urlParameters=null
     ): string
     {
         return $this->getName();

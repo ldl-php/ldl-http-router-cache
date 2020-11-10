@@ -2,24 +2,17 @@
 
 namespace LDL\Http\Router\Plugin\LDL\Cache\Dispatcher;
 
-use LDL\Framework\Base\Traits\IsActiveInterfaceTrait;
-use LDL\Framework\Base\Traits\PriorityInterfaceTrait;
 use LDL\Http\Core\Request\RequestInterface;
 use LDL\Http\Core\Response\ResponseInterface;
-use LDL\Http\Router\Middleware\MiddlewareInterface;
+use LDL\Http\Router\Middleware\AbstractMiddleware;
 use LDL\Http\Router\Plugin\LDL\Cache\Config\RouteCacheConfig;
 use LDL\Http\Router\Plugin\LDL\Cache\Key\Generator\CacheKeyGeneratorInterface;
 use LDL\Http\Router\Route\RouteInterface;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheAdapterInterface;
 use Symfony\Component\HttpFoundation\ParameterBag;
 
-class CachePostDispatch implements MiddlewareInterface
+class CachePostDispatch extends AbstractMiddleware
 {
-    private const NAME = 'ldl.router.cache.preDispatch';
-
-    use IsActiveInterfaceTrait;
-    use PriorityInterfaceTrait;
-
     /**
      * @var CacheAdapterInterface
      */
@@ -35,31 +28,23 @@ class CachePostDispatch implements MiddlewareInterface
      */
     private $cacheKeyGenerator;
 
-    public function __construct(
-        bool $isActive,
-        int $priority,
+    public function init(
         CacheAdapterInterface $cacheAdapter,
         RouteCacheConfig $cacheConfig,
         CacheKeyGeneratorInterface $keyGenerator
-    )
+    ) : self
     {
-        $this->_tActive = $isActive;
-        $this->_tPriority = $priority;
-
         $this->cacheAdapter = $cacheAdapter;
         $this->cacheConfig = $cacheConfig;
         $this->cacheKeyGenerator = $keyGenerator;
+
+        return $this;
     }
 
-    public function getName(): string
-    {
-        return self::NAME;
-    }
-
-    public function dispatch(
-        RouteInterface $route,
+    public function _dispatch(
         RequestInterface $request,
         ResponseInterface $response,
+        RouteInterface $route = null,
         ParameterBag $urlParameters = null
     ) : ?array
     {
@@ -89,6 +74,7 @@ class CachePostDispatch implements MiddlewareInterface
         ];
 
         $item->set($encode);
+
         $this->cacheAdapter->save($item);
         $this->cacheAdapter->commit();
 

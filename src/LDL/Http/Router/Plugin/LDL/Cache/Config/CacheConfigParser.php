@@ -3,7 +3,6 @@
 namespace LDL\Http\Router\Plugin\LDL\Cache\Config;
 
 use LDL\Http\Router\Plugin\LDL\Cache\Adapter\CacheAdapterCollectionInterface;
-use LDL\Http\Router\Plugin\LDL\Cache\Adapter\CacheAdapterCollectionItem;
 use LDL\Http\Router\Plugin\LDL\Cache\Adapter\CacheAdapterCollectionItemInterface;
 use LDL\Http\Router\Plugin\LDL\Cache\Dispatcher\CacheHitExceptionHandler;
 use LDL\Http\Router\Plugin\LDL\Cache\Dispatcher\CachePreDispatch;
@@ -34,16 +33,27 @@ class CacheConfigParser implements RouteConfigParserInterface
     }
 
     public function parse(
-        array $data,
         RouteInterface $route,
         string $file=null
     ): void
     {
-        if(!array_key_exists('cache', $data)){
+        $cachePreDispatchers = $route->getPreDispatchChain()->filterByClass(CachePreDispatch::class);
+        $cachePostDispatchers = $route->getPostDispatchChain()->filterByClass(CachePostDispatch::class);
+
+        $hasPreDispatchers = count($cachePreDispatchers) > 0;
+        $hasPostDispatchers = count($cachePostDispatchers) > 0;
+
+        if(false === $hasPreDispatchers || false === $hasPostDispatchers){
             return;
         }
 
-        $this->adapters->select($data['cache']['adapter']);
+        $config = $route->getConfig()->getRawConfig();
+
+        if(!array_key_exists('cache', $config)){
+            return;
+        }
+
+        $this->adapters->select($config['cache']['adapter']);
 
         /**
          * @var CacheAdapterCollectionItemInterface $adapter
@@ -52,7 +62,7 @@ class CacheConfigParser implements RouteConfigParserInterface
 
         $this->adapters->lockSelection();
 
-        $cacheConfig = RouteCacheConfig::fromArray($data['cache']['config']);
+        $cacheConfig = RouteCacheConfig::fromArray($config['cache']['config']);
 
         if($cacheConfig->getKeyGenerator()){
             $this->keyGenerators->select($cacheConfig->getKeyGenerator());
@@ -60,28 +70,27 @@ class CacheConfigParser implements RouteConfigParserInterface
 
         $this->keyGenerators->lockSelection();
 
-        $route->getRouter()
-            ->getPreDispatchMiddleware()
-            ->append(
-                new CachePreDispatch(
-                    true,
-                    1,
-                    $adapter->getAdapter(),
-                    $cacheConfig,
-                    $this->keyGenerators->getSelectedItem()
-                )
-        );
-
-        $route->getRouter()->getPostDispatchMiddleware()
-            ->append(
-                new CachePostDispatch(
-                    true,
-                    9999,
-                    $adapter->getAdapter(),
-                    $cacheConfig,
-                    $this->keyGenerators->getSelectedItem()
-                )
+        /**
+         * @var CachePreDispatch $preDispatch
+         */
+        foreach($cachePreDispatchers as $preDispatch){
+            $preDispatch->init(
+                $adapter->getAdapter(),
+                $cacheConfig,
+                $this->keyGenerators->getSelectedItem()
             );
+        }
+
+        /**
+         * @var CachePostDispatch $postDispatch
+         */
+        foreach($cachePostDispatchers as $postDispatch){
+            $postDispatch->init(
+                $adapter->getAdapter(),
+                $cacheConfig,
+                $this->keyGenerators->getSelectedItem()
+            );
+        }
 
         $route->getRouter()
             ->getExceptionHandlerCollection()
