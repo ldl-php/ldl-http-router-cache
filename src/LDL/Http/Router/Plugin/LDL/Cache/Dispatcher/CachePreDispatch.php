@@ -7,7 +7,9 @@ use LDL\Http\Core\Response\ResponseInterface;
 use LDL\Http\Router\Middleware\AbstractMiddleware;
 use LDL\Http\Router\Plugin\LDL\Cache\Config\RouteCacheConfig;
 use LDL\Http\Router\Plugin\LDL\Cache\Key\Generator\CacheKeyGeneratorInterface;
-use LDL\Http\Router\Route\RouteInterface;
+use LDL\Http\Router\Response\Exception\CustomResponseException;
+use LDL\Http\Router\Response\Parser\ResponseParserInterface;
+use LDL\Http\Router\Router;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheAdapterInterface;
 use Symfony\Component\HttpFoundation\ParameterBag;
 
@@ -44,11 +46,10 @@ class CachePreDispatch extends AbstractMiddleware
     public function _dispatch(
         RequestInterface $request,
         ResponseInterface $response,
-        RouteInterface $route = null,
+        Router $router,
         ParameterBag $urlParameters = null
     ) : ?array
     {
-        $router = $route->getRouter();
         $headers = $request->getHeaderBag();
 
         $providedPurgeSecret = $headers->get(self::PURGE_SECRET_HEADER);
@@ -56,7 +57,7 @@ class CachePreDispatch extends AbstractMiddleware
         $storageKey = sprintf(
             '%s.%s',
             $router->getResponseParserRepository()->getSelectedKey(),
-            $this->cacheKeyGenerator->generate($router->getCurrentRoute(), $urlParameters)
+            $this->cacheKeyGenerator->generate($router, $urlParameters)
         );
 
         $now = new \DateTime('now');
@@ -101,10 +102,18 @@ class CachePreDispatch extends AbstractMiddleware
          * We need to throw a CacheHitException to break the chain of execution.
          * If we don't throw, everything else in the chain will get executed, ruining the whole purpose of caching.
          */
-        if(!$isPurge){
-            throw new CacheHitException('Cache hit');
+        if($isPurge){
+            return null;
         }
 
-        return null;
+        /**
+         * @var ResponseParserInterface $responseParser
+         */
+        $responseParser = $router->getResponseParserRepository()->getSelectedItem();
+
+        $response->getHeaderBag()->add(['X-Cache-Hit' => 1]);
+        $response->getHeaderBag()->add(['Content-Type' => $responseParser->getContentType()]);
+        throw new CustomResponseException($item->get()['data']['body']);
     }
+
 }

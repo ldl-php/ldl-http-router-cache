@@ -66,6 +66,11 @@ class CacheConfigParser implements RouteConfigParserInterface
 
         if($cacheConfig->getKeyGenerator()){
             $this->keyGenerators->select($cacheConfig->getKeyGenerator());
+
+            if($cacheConfig->getKeyGeneratorOptions()){
+                $this->keyGenerators->getSelectedItem()->setOptions($cacheConfig->getKeyGeneratorOptions());
+            }
+
         }
 
         $this->keyGenerators->lockSelection();
@@ -96,6 +101,7 @@ class CacheConfigParser implements RouteConfigParserInterface
             ->getExceptionHandlerCollection()
             ->append(
                 new CacheHitExceptionHandler(
+                    'ldl.cache.exception.handler',
                     $adapter->getAdapter(),
                     $this->keyGenerators->getSelectedItem()
                 )

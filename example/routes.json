@@ -26,7 +26,17 @@
         "config": {
           "enabled": true,
           "purgeable": false,
-          "expiresAt": "+1 minutes"
+          "expiresAt": "+1 minutes",
+          "keyGenerator": "request.parameter.values",
+          "keyGeneratorOptions": {
+            "debug": true,
+            "get": {
+              "list": "all",
+              "casing":{
+                "key": "lower"
+              }
+            }
+          }
         }
       }
     }

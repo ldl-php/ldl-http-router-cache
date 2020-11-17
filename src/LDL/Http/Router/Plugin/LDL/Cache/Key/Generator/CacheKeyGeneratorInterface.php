@@ -2,7 +2,7 @@
 
 namespace LDL\Http\Router\Plugin\LDL\Cache\Key\Generator;
 
-use LDL\Http\Router\Route\RouteInterface;
+use LDL\Http\Router\Router;
 use Symfony\Component\HttpFoundation\ParameterBag;
 
 interface CacheKeyGeneratorInterface {
@@ -13,14 +13,28 @@ interface CacheKeyGeneratorInterface {
     public function getName() : string;
 
     /**
-     * @param RouteInterface $route
+     * @param Router $router
      * @param ParameterBag $urlParameters
      * @return string
      */
-    public function generate(RouteInterface $route, ParameterBag $urlParameters) : string;
+    public function generate(
+        Router $router,
+        ParameterBag $urlParameters=null
+    ) : string;
 
     /**
      * @return bool
      */
     public function isDefault() : bool;
+
+    /**
+     * @param array|null $options
+     * @return CacheKeyGeneratorInterface
+     */
+    public function setOptions(?array $options) : CacheKeyGeneratorInterface;
+
+    /**
+     * @return array|null
+     */
+    public function getOptions() : ?array;
 }

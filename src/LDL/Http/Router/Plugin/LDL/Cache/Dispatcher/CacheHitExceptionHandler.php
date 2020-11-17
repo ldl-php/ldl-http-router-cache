@@ -2,24 +2,16 @@
 
 namespace LDL\Http\Router\Plugin\LDL\Cache\Dispatcher;
 
-use LDL\Framework\Base\Traits\IsActiveInterfaceTrait;
-use LDL\Framework\Base\Traits\NamespaceInterfaceTrait;
-use LDL\Framework\Base\Traits\PriorityInterfaceTrait;
 use LDL\Http\Core\Response\ResponseInterface;
-use LDL\Http\Router\Handler\Exception\ExceptionHandlerInterface;
+use LDL\Http\Router\Handler\Exception\AbstractExceptionHandler;
 use LDL\Http\Router\Handler\Exception\ModifiesResponseInterface;
 use LDL\Http\Router\Plugin\LDL\Cache\Key\Generator\CacheKeyGeneratorInterface;
 use LDL\Http\Router\Router;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\HttpFoundation\ParameterBag;
 
-class CacheHitExceptionHandler implements ExceptionHandlerInterface, ModifiesResponseInterface
+class CacheHitExceptionHandler extends AbstractExceptionHandler implements ModifiesResponseInterface
 {
-    public const NAME = 'ldl.router.cache.exception.handler';
-
-    use IsActiveInterfaceTrait;
-    use PriorityInterfaceTrait;
-
     /**
      * @var AdapterInterface
      */
@@ -36,20 +28,15 @@ class CacheHitExceptionHandler implements ExceptionHandlerInterface, ModifiesRes
     private $content;
 
     public function __construct(
+        string $name,
         AdapterInterface $cacheAdapter,
         CacheKeyGeneratorInterface $cacheKeyGenerator
     )
     {
-        $this->_tActive = true;
-        $this->_tPriority = 1;
+        parent::__construct($name);
+
         $this->cacheKeyGenerator = $cacheKeyGenerator;
-
         $this->cacheAdapter = $cacheAdapter;
-    }
-
-    public function getName() : string
-    {
-        return self::NAME;
     }
 
     public function getContent(): array

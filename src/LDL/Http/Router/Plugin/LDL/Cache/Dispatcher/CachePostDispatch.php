@@ -7,7 +7,9 @@ use LDL\Http\Core\Response\ResponseInterface;
 use LDL\Http\Router\Middleware\AbstractMiddleware;
 use LDL\Http\Router\Plugin\LDL\Cache\Config\RouteCacheConfig;
 use LDL\Http\Router\Plugin\LDL\Cache\Key\Generator\CacheKeyGeneratorInterface;
-use LDL\Http\Router\Route\RouteInterface;
+use LDL\Http\Router\Response\Formatter\ResponseFormatterInterface;
+use LDL\Http\Router\Response\Parser\ResponseParserInterface;
+use LDL\Http\Router\Router;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheAdapterInterface;
 use Symfony\Component\HttpFoundation\ParameterBag;
 
@@ -44,17 +46,16 @@ class CachePostDispatch extends AbstractMiddleware
     public function _dispatch(
         RequestInterface $request,
         ResponseInterface $response,
-        RouteInterface $route = null,
+        Router $router = null,
         ParameterBag $urlParameters = null
     ) : ?array
     {
-        $router = $route->getRouter();
         $response->getHeaderBag()->set('X-Cache-Hit',0);
 
         $storageKey = sprintf(
             '%s.%s',
             $router->getResponseParserRepository()->getSelectedKey(),
-            $this->cacheKeyGenerator->generate($route, $urlParameters)
+            $this->cacheKeyGenerator->generate($router, $urlParameters)
         );
 
         $item = $this->cacheAdapter->getItem($storageKey);
@@ -68,9 +69,29 @@ class CachePostDispatch extends AbstractMiddleware
             $response->setExpires($expires);
         }
 
+        /**
+         * @var ResponseFormatterInterface $formatter
+         */
+        $formatter = $router->getResponseFormatterRepository()->getSelectedItem();
+
+        $formatter->format($router, $router->getDispatcher()->getResult());
+
+        /**
+         * @var ResponseParserInterface $parser
+         */
+        $parser = $router->getResponseParserRepository()->getSelectedItem();
+
+        $parser->parse($formatter->getResult(), $router);
+
         $encode = [
             'expires' => $expires,
-            'data' => $route->getRouter()->getDispatcher()->getResult()
+            'data' => [
+                'body'    => $parser->getResult(),
+                'headers' => json_encode(
+                    \iterator_to_array($response->getHeaderBag()->getIterator()),
+                    \JSON_THROW_ON_ERROR
+                )
+            ]
         ];
 
         $item->set($encode);

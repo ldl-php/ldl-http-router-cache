@@ -8,7 +8,7 @@ use LDL\Http\Core\Response\Response;
 use LDL\Http\Core\Response\ResponseInterface;
 use LDL\Http\Router\Route\Factory\RouteFactory;
 use LDL\Http\Router\Route\Group\RouteGroup;
-use LDL\Http\Router\Route\RouteInterface;
+use LDL\Http\Router\Plugin\LDL\Cache\Key\Generator\RequestParameterValueCacheKeyGenerator;
 use LDL\Http\Router\Router;
 use LDL\Http\Router\Plugin\LDL\Cache\Config\CacheConfigParser;
 use LDL\Http\Router\Middleware\AbstractMiddleware;
@@ -28,7 +28,7 @@ class CacheDispatcherTest extends AbstractMiddleware
     public function _dispatch(
         RequestInterface $request,
         ResponseInterface $response,
-        RouteInterface $route = null,
+        Router $router = null,
         ParameterBag $urlParameters=null
     ) : ?array
     {
@@ -39,7 +39,8 @@ class CacheDispatcherTest extends AbstractMiddleware
 }
 
 $cacheKeyGenerators = new CacheKeyGeneratorCollection();
-$cacheKeyGenerators->append(new StaticCacheKeyGenerator('static.key', true));
+$cacheKeyGenerators->append(new StaticCacheKeyGenerator('static.key', true))
+    ->append(new RequestParameterValueCacheKeyGenerator('request.parameter.values', false));
 
 $response = new Response();
 

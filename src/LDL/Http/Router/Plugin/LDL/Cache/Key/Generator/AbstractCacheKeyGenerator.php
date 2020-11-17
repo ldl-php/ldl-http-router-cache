@@ -14,10 +14,20 @@ abstract class AbstractCacheKeyGenerator implements CacheKeyGeneratorInterface
      */
     private $isDefault;
 
-    public function __construct(string $name, bool $isDefault=false)
+    /**
+     * @var array|null
+     */
+    private $options;
+
+    public function __construct(
+        string $name,
+        bool $isDefault=false,
+        array $options=null
+    )
     {
         $this->name = $name;
         $this->isDefault = $isDefault;
+        $this->setOptions($options);
     }
 
     public function getName() : string
@@ -28,5 +38,16 @@ abstract class AbstractCacheKeyGenerator implements CacheKeyGeneratorInterface
     public function isDefault() : bool
     {
         return $this->isDefault;
+    }
+
+    public function getOptions() : ?array
+    {
+        return $this->options;
+    }
+
+    public function setOptions(?array $options) : CacheKeyGeneratorInterface
+    {
+        $this->options = $options;
+        return $this;
     }
 }

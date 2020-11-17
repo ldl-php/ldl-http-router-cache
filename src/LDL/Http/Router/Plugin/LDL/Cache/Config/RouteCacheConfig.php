@@ -25,6 +25,11 @@ class RouteCacheConfig
     private $keyGenerator;
 
     /**
+     * @var array
+     */
+    private $keyGeneratorOptions;
+
+    /**
      * @var bool
      */
     private $enabled = true;
@@ -37,6 +42,7 @@ class RouteCacheConfig
             (bool) $merge['purgeable'],
             (bool) $merge['enabled'],
             $merge['keyGenerator'],
+            $merge['keyGeneratorOptions'],
             $merge['expiresAt'],
             $merge['secretKey']
         );
@@ -46,6 +52,7 @@ class RouteCacheConfig
         bool $purgeable,
         bool $enabled,
         ?string $keyGenerator,
+        ?array $keyGeneratorOptions,
         ?string $expiresAt,
         ?string $secretKey
     )
@@ -58,7 +65,8 @@ class RouteCacheConfig
             ->setExpiresAt($expiresAt)
             ->setSecretKey($secretKey)
             ->setPurgeable($purgeable)
-            ->setKeyGenerator($keyGenerator);
+            ->setKeyGenerator($keyGenerator)
+            ->setKeyGeneratorOptions($keyGeneratorOptions);
     }
 
     /**
@@ -91,6 +99,11 @@ class RouteCacheConfig
     public function getKeyGenerator() : ?string
     {
         return $this->keyGenerator;
+    }
+
+    public function getKeyGeneratorOptions() : ?array
+    {
+        return $this->keyGeneratorOptions;
     }
 
     /**
@@ -149,6 +162,13 @@ class RouteCacheConfig
     private function setKeyGenerator(?string $keyGenerator) : self
     {
         $this->keyGenerator = $keyGenerator;
+        return $this;
+    }
+
+    private function setKeyGeneratorOptions(?array $options) : self
+    {
+        $this->keyGeneratorOptions = $options;
+
         return $this;
     }
     //</editor-fold>

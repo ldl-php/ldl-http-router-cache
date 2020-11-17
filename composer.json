@@ -5,7 +5,8 @@
     "require": {
         "symfony/cache": "^5.1",
         "ldl-framework/http-core": "dev-master",
-        "ldl-framework/http-router": "dev-master"
+        "ldl-framework/http-router": "dev-master",
+        "ext-json": "*"
     },
     "license": "MIT",
     "minimum-stability": "dev",
