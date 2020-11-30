@@ -113,7 +113,7 @@ class CachePreDispatch extends AbstractMiddleware
 
         $response->getHeaderBag()->add(['X-Cache-Hit' => 1]);
         $response->getHeaderBag()->add(['Content-Type' => $responseParser->getContentType()]);
-        throw new CustomResponseException($item->get()['data']['body']);
+        throw new CustomResponseException((string) $item->get()['data']['body']);
     }
 
 }

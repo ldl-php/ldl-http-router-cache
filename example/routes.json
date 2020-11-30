@@ -11,15 +11,21 @@
         "method": "get"
       },
       "middleware": {
-        "preDispatch": [
-          "cache.preDispatch"
-        ],
-        "dispatchers": [
-          "test.cache.dispatcher"
-        ],
-        "postDispatch": [
-          "cache.postDispatch"
-        ]
+        "preDispatch": {
+          "list":[
+            "cache.predispatch"
+          ]
+        },
+        "dispatchers": {
+          "list": [
+            "test.cache.dispatcher"
+          ]
+        },
+        "postDispatch": {
+          "list":[
+            "cache.postdispatch"
+          ]
+        }
       },
       "cache": {
         "adapter": "fs.adapter",

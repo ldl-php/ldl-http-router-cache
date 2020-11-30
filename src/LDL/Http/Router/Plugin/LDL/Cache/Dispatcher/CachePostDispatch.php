@@ -74,14 +74,14 @@ class CachePostDispatch extends AbstractMiddleware
          */
         $formatter = $router->getResponseFormatterRepository()->getSelectedItem();
 
-        $formatter->format($router, $router->getDispatcher()->getResult());
+        $formatter->format($router->getDispatcher()->getResult(), false);
 
         /**
          * @var ResponseParserInterface $parser
          */
         $parser = $router->getResponseParserRepository()->getSelectedItem();
 
-        $parser->parse($formatter->getResult(), $router);
+        $parser->parse($router, $formatter->getResult());
 
         $encode = [
             'expires' => $expires,

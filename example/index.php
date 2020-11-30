@@ -64,8 +64,8 @@ $router = new Router(
 
 $dispatcherRepository = new DispatcherRepository();
 $dispatcherRepository->append(new CacheDispatcherTest('test.cache.dispatcher'))
-    ->append(new CachePreDispatch('cache.preDispatch'))
-    ->append(new CachePostDispatch('cache.postDispatch'));
+    ->append(new CachePreDispatch('cache.predispatch'))
+    ->append(new CachePostDispatch('cache.postdispatch'));
 
 try{
     $routes = RouteFactory::fromJsonFile(
