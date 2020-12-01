@@ -6,6 +6,7 @@ use LDL\Http\Core\Request\Request;
 use LDL\Http\Core\Request\RequestInterface;
 use LDL\Http\Core\Response\Response;
 use LDL\Http\Core\Response\ResponseInterface;
+use LDL\Http\Router\Plugin\LDL\Cache\Interfaces\NoCacheInterface;
 use LDL\Http\Router\Route\Factory\RouteFactory;
 use LDL\Http\Router\Route\Group\RouteGroup;
 use LDL\Http\Router\Plugin\LDL\Cache\Key\Generator\RequestParameterValueCacheKeyGenerator;
@@ -22,6 +23,7 @@ use LDL\Http\Router\Middleware\DispatcherRepository;
 use LDL\Http\Router\Route\Config\Parser\RouteConfigParserRepository;
 use LDL\Http\Router\Plugin\LDL\Cache\Dispatcher\CachePreDispatch;
 use LDL\Http\Router\Plugin\LDL\Cache\Dispatcher\CachePostDispatch;
+use LDL\Http\Router\Plugin\LDL\Cache\Traits\NoCacheInterfaceTrait;
 
 class CacheDispatcherTest extends AbstractMiddleware
 {
@@ -33,7 +35,41 @@ class CacheDispatcherTest extends AbstractMiddleware
     ) : ?array
     {
         return [
-            'name' => $urlParameters->get('name')
+            'name' => $urlParameters->get('urlName')
+        ];
+    }
+}
+
+class TimeDispatcher extends AbstractMiddleware implements NoCacheInterface{
+
+    use NoCacheInterfaceTrait;
+
+    public function _dispatch(
+        RequestInterface $request,
+        ResponseInterface $response,
+        Router $router = null,
+        ParameterBag $urlParameters = null
+    ) : ?array
+    {
+        return [
+            'date' => time()
+        ];
+    }
+}
+
+class RandomPreDispatcher extends AbstractMiddleware implements NoCacheInterface{
+
+    use NoCacheInterfaceTrait;
+
+    public function _dispatch(
+        RequestInterface $request,
+        ResponseInterface $response,
+        Router $router = null,
+        ParameterBag $urlParameters = null
+    ) : ?array
+    {
+        return [
+            'random number' => random_int(1, 100)
         ];
     }
 }
@@ -64,22 +100,19 @@ $router = new Router(
 
 $dispatcherRepository = new DispatcherRepository();
 $dispatcherRepository->append(new CacheDispatcherTest('test.cache.dispatcher'))
+    ->append(new TimeDispatcher('test.cache.time.dispatcher'))
+    ->append(new RandomPreDispatcher('test.cache.random.predispatch'))
     ->append(new CachePreDispatch('cache.predispatch'))
     ->append(new CachePostDispatch('cache.postdispatch'));
 
-try{
-    $routes = RouteFactory::fromJsonFile(
-        __DIR__.'/routes.json',
-        $router,
-        $dispatcherRepository
-    );
+$routes = RouteFactory::fromJsonFile(
+    __DIR__.'/routes.json',
+    $router,
+    $dispatcherRepository
+);
 
-    $group = new RouteGroup('test', 'test', $routes);
+$group = new RouteGroup('test', 'test', $routes);
 
-    $router->addGroup($group);
+$router->addGroup($group);
 
-    $router->dispatch()->send();
-}catch(\Exception $e){
-    echo  $e->getMessage();
-}
-
+$router->dispatch()->send();

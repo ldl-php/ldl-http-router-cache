@@ -6,6 +6,7 @@ use LDL\Http\Core\Request\RequestInterface;
 use LDL\Http\Core\Response\ResponseInterface;
 use LDL\Http\Router\Middleware\AbstractMiddleware;
 use LDL\Http\Router\Plugin\LDL\Cache\Config\RouteCacheConfig;
+use LDL\Http\Router\Plugin\LDL\Cache\Helper\ReplaceStaticHelper;
 use LDL\Http\Router\Plugin\LDL\Cache\Key\Generator\CacheKeyGeneratorInterface;
 use LDL\Http\Router\Response\Exception\CustomResponseException;
 use LDL\Http\Router\Response\Parser\ResponseParserInterface;
@@ -111,9 +112,19 @@ class CachePreDispatch extends AbstractMiddleware
          */
         $responseParser = $router->getResponseParserRepository()->getSelectedItem();
 
+        ReplaceStaticHelper::replace(
+            $request,
+            $response,
+            $router,
+            $responseParser,
+            $value,
+            $urlParameters
+        );
+
         $response->getHeaderBag()->add(['X-Cache-Hit' => 1]);
+        $response->setExpires($value['expires']);
         $response->getHeaderBag()->add(['Content-Type' => $responseParser->getContentType()]);
-        throw new CustomResponseException((string) $item->get()['data']['body']);
+        throw new CustomResponseException((string) $value['data']['body']);
     }
 
 }

@@ -13,12 +13,14 @@
       "middleware": {
         "preDispatch": {
           "list":[
-            "cache.predispatch"
+            "cache.predispatch",
+            "test.cache.random.predispatch"
           ]
         },
         "dispatchers": {
           "list": [
-            "test.cache.dispatcher"
+            "test.cache.dispatcher",
+            "test.cache.time.dispatcher"
           ]
         },
         "postDispatch": {
