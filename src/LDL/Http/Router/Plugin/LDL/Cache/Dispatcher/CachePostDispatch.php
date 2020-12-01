@@ -6,7 +6,9 @@ use LDL\Http\Core\Request\RequestInterface;
 use LDL\Http\Core\Response\ResponseInterface;
 use LDL\Http\Router\Middleware\AbstractMiddleware;
 use LDL\Http\Router\Plugin\LDL\Cache\Config\RouteCacheConfig;
+use LDL\Http\Router\Plugin\LDL\Cache\Helper\ReplaceStaticHelper;
 use LDL\Http\Router\Plugin\LDL\Cache\Key\Generator\CacheKeyGeneratorInterface;
+use LDL\Http\Router\Response\Exception\CustomResponseException;
 use LDL\Http\Router\Response\Formatter\ResponseFormatterInterface;
 use LDL\Http\Router\Response\Parser\ResponseParserInterface;
 use LDL\Http\Router\Router;
@@ -99,7 +101,16 @@ class CachePostDispatch extends AbstractMiddleware
         $this->cacheAdapter->save($item);
         $this->cacheAdapter->commit();
 
-        return null;
+        ReplaceStaticHelper::replace(
+            $request,
+            $response,
+            $router,
+            $parser,
+            $encode,
+            $urlParameters
+        );
+
+        throw new CustomResponseException((string) $encode['data']['body']);
     }
 
 }

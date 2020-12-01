@@ -5,12 +5,12 @@ namespace LDL\Http\Router\Plugin\LDL\Cache\Config;
 class RouteCacheConfig
 {
     /**
-     * @var \DateInterval
+     * @var \DateInterval|null
      */
     private $expiresAt;
 
     /**
-     * @var string
+     * @var string|null
      */
     private $secretKey;
 
@@ -20,12 +20,12 @@ class RouteCacheConfig
     private $purgeable;
 
     /**
-     * @var string
+     * @var string|null
      */
     private $keyGenerator;
 
     /**
-     * @var array
+     * @var array|null
      */
     private $keyGeneratorOptions;
 
@@ -136,10 +136,10 @@ class RouteCacheConfig
     }
 
     /**
-     * @param \DateInterval $interval
+     * @param \DateInterval|null $interval
      * @return RouteCacheConfig
      */
-    private function setExpiresAt(\DateInterval $interval) : self
+    private function setExpiresAt(?\DateInterval $interval) : self
     {
         $this->expiresAt = $interval;
         return $this;
@@ -149,7 +149,7 @@ class RouteCacheConfig
      * @param string|null $key
      * @return RouteCacheConfig
      */
-    private function setSecretKey(string $key=null) : self
+    private function setSecretKey(?string $key) : self
     {
         $this->secretKey = $key;
         return $this;
