@@ -7,7 +7,7 @@ use LDL\Type\Collection\Traits\Selection\SingleSelectionTrait;
 use LDL\Type\Collection\Traits\Validator\KeyValidatorChainTrait;
 use LDL\Type\Collection\Types\Object\ObjectCollection;
 use LDL\Type\Collection\Types\Object\Validator\InterfaceComplianceItemValidator;
-use LDL\Type\Collection\Validator\UniqueKeyValidator;
+use LDL\Type\Collection\Validator\UniqueValidator;
 
 class CacheKeyGeneratorCollection extends ObjectCollection implements CacheKeyGeneratorCollectionInterface
 {
@@ -18,12 +18,12 @@ class CacheKeyGeneratorCollection extends ObjectCollection implements CacheKeyGe
     {
         parent::__construct($items);
 
-        $this->getValidatorChain()
+        $this->getValueValidatorChain()
             ->append(new InterfaceComplianceItemValidator(CacheKeyGeneratorInterface::class))
             ->lock();
 
         $this->getKeyValidatorChain()
-            ->append(new UniqueKeyValidator())
+            ->append(new UniqueValidator())
             ->lock();
     }
 

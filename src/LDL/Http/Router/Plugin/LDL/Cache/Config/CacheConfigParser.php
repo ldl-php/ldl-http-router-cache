@@ -98,7 +98,7 @@ class CacheConfigParser implements RouteConfigParserInterface
         }
 
         $route->getRouter()
-            ->getExceptionHandlerCollection()
+            ->getExceptionHandlers()
             ->append(
                 new CacheHitExceptionHandler(
                     'ldl.cache.exception.handler',
